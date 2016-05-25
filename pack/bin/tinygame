@@ -1,0 +1,179 @@
+#!/usr/bin/env node
+
+var program = require('commander');
+var path = require('path');
+var spawn = require('child_process').spawn;
+var exec = require('child_process').exec;
+var fs = require('fs');
+var os = require('os');
+var zmq = require('zmq');
+var cliff = require('cliff');
+
+var version = require('../package.json').version;
+var serverConfig = require('../schema/servers.json');
+var commandConfig = require('../schema/command.json');
+
+var SCRIPT_NOT_FOUND = ' Fail to find an appropriate script to run,\nplease check the current work directory.\n'.red;
+var CLOSEAPP_INFO = 'Closing tinygame......\nPlease wait......';
+
+var KILL_CMD_LUX = 'kill -9 `ps -ef|grep node|awk \'{print $2}\'`';
+var LIST_CMD_LUX = 'ps -ef | grep node';
+
+program.version(version);
+
+function split(value) {
+	return value.split(',');
+}
+
+
+program.command('start')
+	.description('start the servers!')
+	.option('-d, --daemon', 'daemon start')
+	.option('-s, --specific <server>', 'specific server, \',\' to split mutiple servers\'name', split)
+	.action(function(opts) {
+		start(opts);
+	});
+
+program.command('stop')
+	.description('stop the servers!')
+	.option('-f, --force', 'force stop, kill!')
+	.option('-s, --specific <server>', 'specific server, \',\' to split mutiple servers\'name', split)
+	.action(function(opts) {
+		terminal(opts);
+	});
+
+program.command('list')
+	.description('list the servers!')
+	.action(function(opts) {
+		list(opts);
+	});
+
+program.command('dump')
+	.description('heap dump the servers!')
+	.action(function(opts) {
+		heapdump(opts);
+	});
+
+program.parse(process.argv);
+
+
+
+function abort(str) {
+	console.error(str);
+	process.exit(1);
+}
+
+function setup(opts, absScript, serverType, i) {
+	process.env.serverConfig = JSON.stringify({
+		"type":       serverType,
+		"id":         serverConfig[serverType][i].id,
+		"host":       serverConfig[serverType][i].host,
+		"clientPort": serverConfig[serverType][i].clientPort,
+		"router":     serverConfig[serverType][i].router
+	});
+
+	if (opts.daemon) {
+		ls = spawn('node', [absScript], { detached: true, stdio: 'ignore' });
+		ls.unref();
+	} else {
+		ls = spawn('node', [absScript], { stdio: 'inherit' });
+		ls.on('error', function(e) {
+			console.error(e);
+		});
+	}
+	console.log('process : ', absScript, serverConfig[serverType][i].id);
+}
+
+function start(opts) {
+	var serverType, ls, i, j;
+	var absScript = path.resolve(process.cwd(), 'app.js');
+	if (!fs.existsSync(absScript)) {
+		abort(absScript + SCRIPT_NOT_FOUND);
+	}
+
+	if (opts.specific) {
+		for (serverType in serverConfig) {
+			for (i = 0; i < serverConfig[serverType].length; ++i) {
+				for (j = 0; j < opts.specific.length; ++j) {
+					if (serverConfig[serverType][i].id === opts.specific[j]) {
+						setup(opts, absScript, serverType, i);
+					}
+				}
+			}
+		}
+	} else {
+		for (serverType in serverConfig) {
+			for (i = 0; i < serverConfig[serverType].length; ++i) {
+				setup(opts, absScript, serverType, i);
+			}
+		}
+	}
+}
+
+function sendCmd(commander) {
+	var cmd = zmq.socket('dealer');
+	cmd.connect("tcp://" + commandConfig.cmdDealer.host + ":" + commandConfig.cmdDealer.port);
+	cmd.send(commander);
+	return cmd;
+}
+
+function terminal(opts) {
+	if (opts.force) {
+		if (os.platform() === 'linux') {
+			console.log(KILL_CMD_LUX);
+			exec(KILL_CMD_LUX);
+		} else {
+			return;
+		}
+	} else if (opts.specific) {
+		var cmd = sendCmd('stop ' + opts.specific.join(' '));
+		setTimeout(function() {
+			cmd.close();
+			process.exit(0);
+		}, 1000);
+	} else {
+		var cmd = sendCmd('stop');
+		setTimeout(function() {
+			cmd.close();
+			process.exit(0);
+		}, 1000);
+	}
+}
+
+function list(opts) {
+	var servers = [];
+	var cmd = sendCmd('list');
+	cmd.on('message', function(data) {
+		servers.push(JSON.parse(data));
+	});
+
+	setTimeout(function() {
+		var comparer = function(a, b) {
+			if (a.serverType < b.serverType) {
+				return -1;
+			} else if (a.serverType > b.serverType) {
+				return 1;
+			} else if (a.serverid < b.serverid) {
+				return -1;
+			} else if (a.serverid > b.serverid) {
+				return 1;
+			} else {
+				return 0;
+			}
+		};
+		servers.sort(comparer);
+		var rows = [];
+		rows.push(['serverId', 'serverType', 'pid', 'rss(M)', 'heapTotal(M)', 'heapUsed(M)', 'uptime(m)']);
+		servers.forEach(function(server) {
+			rows.push([server.serverid, server.serverType, server.pid, server.rss, server.heapTotal, server.heapUsed, server.uptime]);
+		});
+		console.log(cliff.stringifyRows(rows, ['red', 'blue', 'green', 'cyan', 'magenta', 'white', 'yellow']));
+		cmd.close();
+		process.exit(0);
+	}, 1000);
+}
+
+function heapdump(opts) {
+	var cmd = sendCmd('heapdump');
+	cmd.close();
+}

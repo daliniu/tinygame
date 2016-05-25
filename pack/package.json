@@ -1,0 +1,39 @@
+{
+    "name": "tinyserver",
+    "version": "0.1.1",
+    "private": false,
+    "homepage": "https://github.com/rangercyh/tinyserver",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/rangercyh/tinyserver.git"
+    },
+    "keywords": [
+        "game",
+        "nodejs",
+        "server"
+    ],
+    "dependencies": {
+        "mysql": "2.5.5",
+        "bcrypt": "0.8.1",
+        "zmq": "2.10.0",
+        "commander": "2.7.1",
+        "node-uuid": "1.4.3",
+        "cliff": "0.1.10",
+        "heapdump": "0.3.5",
+        "redis": "0.12.1",
+        "hiredis": "0.2.0",
+        "msgpack-js": "0.3.0",
+        "moment": "2.9.0",
+        "node-schedule": "0.2.6",
+        "async": "0.9.0",
+        "log4js": "0.6.24",
+        "chance": "0.7.4",
+        "ws": "0.7.1",
+        "memwatch-next": "0.2.6",
+        "pm2": "0.15.7"
+    },
+    "devDependencies": {
+        "mocha": "2.2.1",
+        "should": "5.2.0"
+    }
+}

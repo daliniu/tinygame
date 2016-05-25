@@ -1,0 +1,71 @@
+[2016-02-20 14:45:35.545] [INFO] loc-1 - |loc-1|addItem|add item success|12007|99
+[2016-02-20 14:45:35.547] [INFO] loc-1 - |loc-1|addItem|add item success|12001|99
+[2016-02-20 14:45:35.547] [INFO] loc-1 - |loc-1|addItem|add item success|19205|1
+[2016-02-20 14:45:35.552] [ERROR] loc-1 - |loc-1| Character don't the heroId|
+[2016-02-20 14:45:35.561] [INFO] loc-1 - |loc-1|0|loadPlayerInfo|in:|{"authInfo":"bab","area":1,"code":0,"plat":3,"uuid":"bab"}|out:|{"uuid":"bab","loginState":"1","playerInfo":{"uuid":"bab","area":1,"userName":"bab","level":1,"curExp":0,"gold":0,"vip":0,"diamond":0,"power":1595,"posList":{"1":{"heroId":10013,"pos":4,"equipIdList":{"1":10103,"2":0,"3":0,"4":0,"5":0,"6":0}},"2":{"heroId":10003,"pos":5,"equipIdList":{"1":0,"2":0,"3":0,"4":0,"5":0,"6":0}},"3":{"heroId":10004,"pos":6,"equipIdList":{"1":0,"2":0,"3":0,"4":0,"5":0,"6":0}}},"equipList":{"1":{},"2":{},"3":{}},"teamList":{"10003":{"skillList":[],"heroId":"10003","curExp":0,"level":1,"star":1,"quality":0,"skillSlotList":{"1":{"skillId":0,"level":1},"2":{"skillId":0,"level":1},"3":{"skillId":0,"level":1},"4":{"skillId":0,"level":1},"5":{"skillId":0,"level":1},"6":{"skillId":0,"level":1}},"pos":5,"suitId1":11,"suitId2":15,"suitId3":13,"suitId4":15,"suitId5":14},"10004":{"skillList":[],"heroId":10004,"curExp":0,"level":1,"star":1,"quality":0,"skillSlotList":{"1":{"skillId":0,"level":1},"2":{"skillId":0,"level":1},"3":{"skillId":0,"level":1},"4":{"skillId":0,"level":1},"5":{"skillId":0,"level":1},"6":{"skillId":0,"level":1}},"pos":6,"suitId1":16,"suitId2":20,"suitId3":17,"suitId4":17,"suitId5":16},"10013":{"skillList":[],"heroId":10013,"curExp":0,"level":1,"star":1,"quality":0,"skillSlotList":{"1":{"skillId":0,"level":1},"2":{"skillId":0,"level":1},"3":{"skillId":0,"level":1},"4":{"skillId":0,"level":1},"5":{"skillId":0,"level":1},"6":{"skillId":0,"level":1}},"pos":4,"suitId1":65,"suitId2":62,"suitId3":65,"suitId4":65,"suitId5":62}},"bagList":{"max":100,"itemList":{"12001":{"num":99},"12007":{"num":99},"19205":{"num":1}},"equipList":{}}}}
+[2016-02-20 14:45:44.930] [INFO] loc-1 - |loc-1|0|offlineProfit|in:|{"uuid":"bab","area":1}|out:|{"bagitem":{},"playerInfo":{"uuid":"bab","area":1,"userName":"bab","level":1,"curExp":0,"gold":0,"vip":0,"diamond":0,"power":500,"posList":{"1":{"heroId":10013,"pos":4,"equipIdList":{"1":10103,"2":0,"3":0,"4":0,"5":0,"6":0}},"2":{"heroId":10003,"pos":5,"equipIdList":{"1":0,"2":0,"3":0,"4":0,"5":0,"6":0}},"3":{"heroId":10004,"pos":6,"equipIdList":{"1":0,"2":0,"3":0,"4":0,"5":0,"6":0}}},"teamList":{"10003":{"skillList":[],"heroId":"10003","curExp":0,"level":1,"star":1,"quality":0,"skillSlotList":{"1":{"skillId":0,"level":1},"2":{"skillId":0,"level":1},"3":{"skillId":0,"level":1},"4":{"skillId":0,"level":1},"5":{"skillId":0,"level":1},"6":{"skillId":0,"level":1}},"pos":0,"suitId1":11,"suitId2":15,"suitId3":13,"suitId4":15,"suitId5":14},"10004":{"skillList":[],"heroId":10004,"curExp":0,"level":1,"star":1,"quality":0,"skillSlotList":{"1":{"skillId":0,"level":1},"2":{"skillId":0,"level":1},"3":{"skillId":0,"level":1},"4":{"skillId":0,"level":1},"5":{"skillId":0,"level":1},"6":{"skillId":0,"level":1}},"pos":0,"suitId1":16,"suitId2":20,"suitId3":17,"suitId4":17,"suitId5":16},"10013":{"skillList":[],"heroId":10013,"curExp":0,"level":1,"star":1,"quality":0,"skillSlotList":{"1":{"skillId":0,"level":1},"2":{"skillId":0,"level":1},"3":{"skillId":0,"level":1},"4":{"skillId":0,"level":1},"5":{"skillId":0,"level":1},"6":{"skillId":0,"level":1}},"pos":0,"suitId1":65,"suitId2":62,"suitId3":65,"suitId4":65,"suitId5":62}}},"gold":0,"exp":0,"action":0,"offTime":9,"retCode":0}
+[2016-02-20 14:45:44.937] [INFO] loc-1 - |loc-1|ErrCode.SUCCESS = |0|{"mailList":{}}
+[2016-02-20 14:45:44.937] [INFO] loc-1 - |loc-1|0|ReceiveMail|in:|{}|out:|{"mailList":{}}
+[2016-02-20 14:45:45.721] [INFO] loc-1 - |loc-1|0|setMaxPower|in:|{"maxPower":1114,"uuid":"bab","area":1}|out:|{"retCode":0,"maxPower":1095}
+[2016-02-20 14:45:47.020] [INFO] loc-1 - |loc-1|0|getRewardTime|in:|{"uuid":"bab","area":1}|out:|{"rewardCount":0,"step":1,"retCode":0}
+[2016-02-20 14:46:05.981] [INFO] loc-1 - |loc-1|0|getGlobalMapInfo|in:|{"uuid":"bab","area":1}|out:|{"curNode":101201,"openNode":{"101102":{"process":0,"compAward":0},"101201":{"process":0,"compAward":0}},"timeNode":{},"retCode":0}
+[2016-02-20 14:46:09.201] [INFO] loc-1 - |loc-1|0|enterMap|in:|{"nodeid":101102,"uuid":"bab","area":1}|out:|{"x":9,"y":7,"ap":0,"uidList":{},"sign":{},"buff":{},"process":0,"retCode":0}
+[2016-02-20 14:46:16.996] [INFO] loc-1 - |loc-1|walk1111111111|4
+[2016-02-20 14:46:16.997] [INFO] loc-1 - |loc-1|walk22222222|9|8
+[2016-02-20 14:46:16.997] [INFO] loc-1 - |loc-1|walk22222222|10|8
+[2016-02-20 14:46:16.997] [INFO] loc-1 - |loc-1|walk22222222|10|9
+[2016-02-20 14:46:16.997] [INFO] loc-1 - |loc-1|walk22222222|10|10
+[2016-02-20 14:46:16.997] [INFO] loc-1 - |loc-1|walk enddddddddddddddd|10|10|4|4|4
+[2016-02-20 14:46:17.000] [INFO] loc-1 - |loc-1|0|walkPath|in:|{"nodeid":101102,"uid":-1,"path":[{"x":9,"y":8},{"x":10,"y":8},{"x":10,"y":9},{"x":10,"y":10}],"uuid":"bab","area":1}|out:|{"nodeid":101102,"x":10,"y":10,"ap":4,"buff":{},"retCode":0}
+[2016-02-20 14:46:28.188] [INFO] loc-1 - |loc-1|walk1111111111|4
+[2016-02-20 14:46:28.188] [INFO] loc-1 - |loc-1|walk22222222|9|10
+[2016-02-20 14:46:28.188] [INFO] loc-1 - |loc-1|walk22222222|8|10
+[2016-02-20 14:46:28.188] [INFO] loc-1 - |loc-1|walk22222222|7|10
+[2016-02-20 14:46:28.188] [INFO] loc-1 - |loc-1|walk22222222|7|9
+[2016-02-20 14:46:28.188] [INFO] loc-1 - |loc-1|walk enddddddddddddddd|7|9|4|4|4
+[2016-02-20 14:46:28.191] [INFO] loc-1 - |loc-1|0|walkPath|in:|{"nodeid":101102,"uid":-1,"path":[{"x":9,"y":10},{"x":8,"y":10},{"x":7,"y":10},{"x":7,"y":9}],"uuid":"bab","area":1}|out:|{"nodeid":101102,"x":7,"y":9,"ap":8,"buff":{},"retCode":0}
+[2016-02-20 14:46:30.068] [INFO] loc-1 - |loc-1|addItem|add item success|12004|6
+[2016-02-20 14:46:30.068] [INFO] loc-1 - |loc-1|addItem|add item success|19061|5
+[2016-02-20 14:46:30.069] [INFO] loc-1 - |loc-1|addItem|add item success|19011|5
+[2016-02-20 14:46:30.069] [INFO] loc-1 - |loc-1|addItem|add item success|19016|5
+[2016-02-20 14:46:30.074] [INFO] loc-1 - |loc-1|0|changeState|in:|{"nodeid":101102,"uid":2220,"nextstate":2,"args":{},"uuid":"bab","area":1}|out:|{"args":{"reward":{"team_exp":600,"itemList":{"12004":{"num":6},"19011":{"num":5},"19016":{"num":5},"19061":{"num":5}}},"process":10},"nodeid":101102,"uid":2220,"state":2,"retCode":0}
+[2016-02-20 14:46:51.577] [INFO] loc-1 - |loc-1|walk1111111111|3
+[2016-02-20 14:46:51.577] [INFO] loc-1 - |loc-1|walk22222222|7|10
+[2016-02-20 14:46:51.577] [INFO] loc-1 - |loc-1|walk22222222|8|10
+[2016-02-20 14:46:51.577] [INFO] loc-1 - |loc-1|walk22222222|9|10
+[2016-02-20 14:46:51.577] [INFO] loc-1 - |loc-1|walk enddddddddddddddd|9|10|3|3|3
+[2016-02-20 14:46:51.580] [INFO] loc-1 - |loc-1|0|walkPath|in:|{"nodeid":101102,"uid":-1,"path":[{"x":7,"y":10},{"x":8,"y":10},{"x":9,"y":10}],"uuid":"bab","area":1}|out:|{"nodeid":101102,"x":9,"y":10,"ap":11,"buff":{},"retCode":0}
+[2016-02-20 14:46:54.339] [INFO] loc-1 - |loc-1|walk1111111111|3
+[2016-02-20 14:46:54.340] [INFO] loc-1 - |loc-1|walk22222222|10|10
+[2016-02-20 14:46:54.340] [INFO] loc-1 - |loc-1|walk22222222|10|9
+[2016-02-20 14:46:54.340] [INFO] loc-1 - |loc-1|walk22222222|10|8
+[2016-02-20 14:46:54.340] [INFO] loc-1 - |loc-1|walk enddddddddddddddd|10|8|3|3|3
+[2016-02-20 14:46:54.344] [INFO] loc-1 - |loc-1|0|walkPath|in:|{"nodeid":101102,"uid":-1,"path":[{"x":10,"y":10},{"x":10,"y":9},{"x":10,"y":8}],"uuid":"bab","area":1}|out:|{"nodeid":101102,"x":10,"y":8,"ap":14,"buff":{},"retCode":0}
+[2016-02-20 14:46:58.367] [INFO] loc-1 - |loc-1|walk1111111111|2
+[2016-02-20 14:46:58.367] [INFO] loc-1 - |loc-1|walk22222222|10|9
+[2016-02-20 14:46:58.367] [INFO] loc-1 - |loc-1|walk22222222|10|10
+[2016-02-20 14:46:58.367] [INFO] loc-1 - |loc-1|walk enddddddddddddddd|10|10|2|2|2
+[2016-02-20 14:46:58.370] [INFO] loc-1 - |loc-1|0|walkPath|in:|{"nodeid":101102,"uid":-1,"path":[{"x":10,"y":9},{"x":10,"y":10}],"uuid":"bab","area":1}|out:|{"nodeid":101102,"x":10,"y":10,"ap":16,"buff":{},"retCode":0}
+[2016-02-20 14:47:00.524] [INFO] loc-1 - |loc-1|walk1111111111|2
+[2016-02-20 14:47:00.524] [INFO] loc-1 - |loc-1|walk22222222|9|10
+[2016-02-20 14:47:00.524] [INFO] loc-1 - |loc-1|walk22222222|9|11
+[2016-02-20 14:47:00.524] [INFO] loc-1 - |loc-1|walk enddddddddddddddd|9|11|2|2|2
+[2016-02-20 14:47:00.526] [INFO] loc-1 - |loc-1|0|walkPath|in:|{"nodeid":101102,"uid":-1,"path":[{"x":9,"y":10},{"x":9,"y":11}],"uuid":"bab","area":1}|out:|{"nodeid":101102,"x":9,"y":11,"ap":18,"buff":{},"retCode":0}
+[2016-02-20 14:47:06.501] [INFO] loc-1 - |loc-1|walk1111111111|3
+[2016-02-20 14:47:06.501] [INFO] loc-1 - |loc-1|walk22222222|8|11
+[2016-02-20 14:47:06.501] [INFO] loc-1 - |loc-1|walk22222222|8|12
+[2016-02-20 14:47:06.501] [INFO] loc-1 - |loc-1|walk22222222|8|13
+[2016-02-20 14:47:06.501] [INFO] loc-1 - |loc-1|walk enddddddddddddddd|8|13|3|3|3
+[2016-02-20 14:47:06.506] [INFO] loc-1 - |loc-1|0|walkPath|in:|{"nodeid":101102,"uid":-1,"path":[{"x":8,"y":11},{"x":8,"y":12},{"x":8,"y":13}],"uuid":"bab","area":1}|out:|{"nodeid":101102,"x":8,"y":13,"ap":21,"buff":{},"retCode":0}
+[2016-02-20 14:47:11.436] [INFO] loc-1 - |loc-1|walk1111111111|3
+[2016-02-20 14:47:11.436] [INFO] loc-1 - |loc-1|walk22222222|9|13
+[2016-02-20 14:47:11.436] [INFO] loc-1 - |loc-1|walk22222222|9|14
+[2016-02-20 14:47:11.436] [INFO] loc-1 - |loc-1|walk22222222|9|15
+[2016-02-20 14:47:11.436] [INFO] loc-1 - |loc-1|walk enddddddddddddddd|9|15|3|3|3
+[2016-02-20 14:47:11.438] [INFO] loc-1 - |loc-1|0|walkPath|in:|{"nodeid":101102,"uid":-1,"path":[{"x":9,"y":13},{"x":9,"y":14},{"x":9,"y":15}],"uuid":"bab","area":1}|out:|{"nodeid":101102,"x":9,"y":15,"ap":24,"buff":{},"retCode":0}
+[2016-02-20 14:47:15.232] [INFO] loc-1 - |loc-1|0|changeState|in:|{"nodeid":101102,"uid":2457,"nextstate":2,"args":{},"uuid":"bab","area":1}|out:|{"args":{"reward":{"gold":10000},"monsterid":10600101,"result":1,"seed":2042555,"process":20},"nodeid":101102,"uid":2457,"state":2,"retCode":0}
+[2016-02-20 14:47:18.686] [INFO] loc-1 - |loc-1|0|getRewardTime|in:|{"uuid":"bab","area":1}|out:|{"rewardCount":0,"step":1,"retCode":0}
+[2016-02-20 14:47:18.723] [INFO] loc-1 - |loc-1|0|getRewardTime|in:|{"uuid":"bab","area":1}|out:|{"rewardCount":0,"step":1,"retCode":0}
+[2016-02-20 14:48:17.099] [INFO] loc-1 - |loc-1|0|enterMap|in:|{"nodeid":101102,"uuid":"bab","area":1}|out:|{"x":9,"y":15,"ap":24,"uidList":{"2220":2,"2457":2},"sign":{},"buff":{},"process":20,"retCode":0}
+[2016-02-20 14:48:19.241] [INFO] loc-1 - |loc-1|0|getHeroInfoList|in:|{"uuid":"bab","area":1}|out:|{"heroBookInfo":{"heroId1":10001,"heroId2":"10013","heroId3":"10004","summomNums":11,"countSummomNums":0,"shop1":19012,"shop2":19062,"shop3":19063,"shop4":19013,"shop5":19060,"refreshNums":3,"time":1455950735},"heroInfoList":{"10003":{"skillList":[],"heroId":"10003","curExp":0,"level":1,"star":1,"quality":0,"skillSlotList":{"1":{"skillId":0,"level":1},"2":{"skillId":0,"level":1},"3":{"skillId":0,"level":1},"4":{"skillId":0,"level":1},"5":{"skillId":0,"level":1},"6":{"skillId":0,"level":1}},"pos":0,"suitId1":11,"suitId2":15,"suitId3":13,"suitId4":15,"suitId5":14},"10004":{"skillList":[],"heroId":10004,"curExp":0,"level":1,"star":1,"quality":0,"skillSlotList":{"1":{"skillId":0,"level":1},"2":{"skillId":0,"level":1},"3":{"skillId":0,"level":1},"4":{"skillId":0,"level":1},"5":{"skillId":0,"level":1},"6":{"skillId":0,"level":1}},"pos":0,"suitId1":16,"suitId2":20,"suitId3":17,"suitId4":17,"suitId5":16},"10013":{"skillList":[],"heroId":10013,"curExp":0,"level":1,"star":1,"quality":0,"skillSlotList":{"1":{"skillId":0,"level":1},"2":{"skillId":0,"level":1},"3":{"skillId":0,"level":1},"4":{"skillId":0,"level":1},"5":{"skillId":0,"level":1},"6":{"skillId":0,"level":1}},"pos":0,"suitId1":65,"suitId2":62,"suitId3":65,"suitId4":65,"suitId5":62}},"retCode":0}
+[2016-02-20 14:48:24.330] [INFO] loc-1 - |loc-1|0|makeHeroLineup|in:|{"posDst":5,"heroId":10004,"uuid":"bab","area":1}|out:|{"isOk":1,"retCode":0}

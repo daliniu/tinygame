@@ -1,0 +1,22 @@
+#!/bin/sh
+
+dir=/home/pack
+
+cfgpath=svn://gz2.xsjsvn.rdev.kingsoft.net/tiny-products/trunk/cfg
+
+rm -rf temp
+
+mkdir $dir/temp
+
+mkdir $dir/temp/js
+
+cd $dir/temp
+
+svn co $cfgpath
+
+cd $dir
+
+./table2js.lua
+
+cp -r $dir/temp/js/* $dir/module/config/
+cp -r $dir/temp/cfg/mapjson/* $dir/module/config/mapjson/

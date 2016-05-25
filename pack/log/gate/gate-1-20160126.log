@@ -1,0 +1,4 @@
+[2016-01-26 10:56:39.499] [INFO] gate-1 - |gate-1|当前连接数：1
+[2016-01-26 10:56:41.872] [INFO] gate-1 - |gate-1|0|getAvgConnServerLoadNums|in:|{"chnlId":"mi"}|out:|{"host":"123.59.107.130","port":"5000","loadNums":2000,"retCode":0}
+[2016-01-26 10:56:41.878] [INFO] gate-1 - |gate-1||request.message|DONE|rid:cb443771-529e-474c-b036-08de3fad746egate-1|
+[2016-01-26 10:56:41.970] [INFO] gate-1 - |gate-1|服务器断开了一个客户端

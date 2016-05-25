@@ -1,0 +1,12 @@
+[2015-12-11 14:34:17.867] [ERROR] pvp-1 - |pvp-1|Error: Redis connection to 10.20.68.103:6379 failed - connect ETIMEDOUT
+[2015-12-11 14:34:17.868] [ERROR] pvp-1 - |pvp-1|masterredis server shutdown
+[2015-12-11 14:34:17.871] [ERROR] pvp-1 - |pvp-1|Error: Redis connection to 10.20.68.103:6479 failed - connect ETIMEDOUT
+[2015-12-11 14:34:17.872] [ERROR] pvp-1 - |pvp-1|session redis server shutdown
+[2015-12-11 14:37:33.834] [ERROR] pvp-1 - |pvp-1|Error: Redis connection to 10.20.68.103:6379 failed - connect ETIMEDOUT
+[2015-12-11 14:37:33.835] [ERROR] pvp-1 - |pvp-1|masterredis server shutdown
+[2015-12-11 14:37:33.837] [ERROR] pvp-1 - |pvp-1|Error: Redis connection to 10.20.68.103:6479 failed - connect ETIMEDOUT
+[2015-12-11 14:37:33.838] [ERROR] pvp-1 - |pvp-1|session redis server shutdown
+[2015-12-11 14:40:48.906] [ERROR] pvp-1 - |pvp-1|Error: Redis connection to 10.20.68.103:6379 failed - connect ETIMEDOUT
+[2015-12-11 14:40:48.907] [ERROR] pvp-1 - |pvp-1|masterredis server shutdown
+[2015-12-11 14:40:48.909] [ERROR] pvp-1 - |pvp-1|Error: Redis connection to 10.20.68.103:6479 failed - connect ETIMEDOUT
+[2015-12-11 14:40:48.910] [ERROR] pvp-1 - |pvp-1|session redis server shutdown

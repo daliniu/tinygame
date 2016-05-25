@@ -1,0 +1,269 @@
+----------------------------------------------------------
+-- file:	core.lua
+-- Author:	page
+-- Time:	2015/01/27 15:36
+-- Desc:	全局的core对象
+--
+----------------------------------------------------------
+require "script/lib/definefunctions"
+require "script/lib/actionfunctions"
+require "script/lib/basefunctions"
+require "script/lib/debugfunctions"
+require "script/lib/stringfunctions"
+require "script/lib/testfunctions"
+require "script/lib/timefunctions"
+
+require "script/core/skill/head"
+require "script/core/player/playerfactory"
+TClient = require('script/core/network/tclient')
+require('script/core/network/init')
+require "script/core/npc/herofactory"				-- KGC_HERO_FACTORY_TYPE:getInstance()
+----------------------------------------------------------
+local l_tbUIUpdateType = def_GetUIUpdateTypeData();
+local l_tbGameState = def_GetGameState();
+local cjson = require("cjson.core")
+
+--data
+local TB_CORE_DATA = {
+	communicator = nil,					-- 协议对象
+	authInfo = "",              		-- sdk 验证信息
+	gateIP = "10.20.68.102",     		-- IP
+	gatePort = 4000,             		-- 端口
+	myIP = nil,                    		-- IP
+	myPort = nil,                   	-- 端口
+	
+	m_nState = 0,						-- 状态()
+}
+
+KGC_CORE_TYPE= class("KGC_CORE_TYPE", CLASS_BASE_TYPE, TB_CORE_DATA)
+
+--function
+function KGC_CORE_TYPE:ctor()
+
+end
+
+--初始化网络连接
+function KGC_CORE_TYPE:initNetwork(host, port, callback)
+	if self.client ~= nil then
+		self.client:close()
+	end
+	self.client = nil
+	--self.client = TClient.new(host, port, '')
+	self.client = TClient.new(host, port, callback)
+end
+
+function KGC_CORE_TYPE:initCommunicator(callback)
+	local initCallback = function()
+		-- 获取IP和port
+		self:initGateCommunicator(callback)
+	end
+	-- 连接网关
+	self.communicator = initCommunicator(g_Core.gateIP, g_Core.gatePort, initCallback)
+end
+
+function KGC_CORE_TYPE:initGateCommunicator(callback)
+	-- 获取connIP和port回调
+	local avgCallback = function(outArgs)
+		if self.client then
+			self.client:close();
+		end
+		self.client = nil
+		-- 根据服务端传回IP和端口初始化网络接口
+		print("getAvgConnServerLoadNums", outArgs.host, outArgs.port, outArgs.loadNums)
+		-- 保存IP和port
+		g_Core.myIP = outArgs.host
+		g_Core.myPort = outArgs.port
+		--初始化网络连接
+		self:initNetCommunicator(callback)
+	end
+	self.communicator.gate.getAvgConnServerLoadNums({chnlId = "mi"}, avgCallback)
+end
+
+function KGC_CORE_TYPE:initNetCommunicator(callback)
+	local initCallback = function()
+		if callback ~= nil then
+			callback()
+		end
+	end
+	if g_Core.myIP == nil or g_Core.myPort == nil then
+		self:initCommunicator()
+	else
+		self.communicator = initCommunicator(g_Core.myIP, g_Core.myPort, initCallback)
+	end
+end
+
+function KGC_CORE_TYPE:closeNetwork()
+	if self.client then
+		self.client:close();
+	end
+	self.client = nil
+end
+
+--发送数据
+function KGC_CORE_TYPE:send(msgId, data, isLoadUi)
+	if self.client then
+		self.client:send(msgId, data, isLoadUi)
+		--test
+		local szLog = string.format("[发送数据]协议(%d), msg = {", msgId);
+		local szMsg = ""
+		for k, v in pairs(data) do
+			local szTemp = tostring(k) .. " : " .. tostring(v) .. ", " .. tostring(type(v)) .. ";"
+			szMsg = szMsg .. szTemp;
+		end
+		szLog = szLog .. szMsg .. "}"
+		print(szLog);
+		--test
+		return true;
+	end
+	return false
+end
+
+function KGC_CORE_TYPE:sendEx(data, isLoadUi)
+	if self.client then
+		self.client:sendEx(data, isLoadUi)
+		return true;
+	end
+	return false
+end
+
+function KGC_CORE_TYPE:init(tbData)
+	print("core init ...")
+	-- 设置登录状态
+	self:SetGameState(l_tbGameState.TS_LOGINED);
+	-- 初始化全局单例对象
+	-- g_SkillManager = KGC_SKILL_MANAGER_TYPE:getInstance();
+
+	--玩家数据
+	me:init(tbData);
+	assert(me);
+	-- 初始化挂机数据
+	me:InitAfkStatistics();
+
+	--背包
+	print("[]core init end.")
+	--
+
+	-- 注册接受消息的回调函数
+	self:RegisterMessageCallBack();
+end
+
+function KGC_CORE_TYPE:UnInit()
+	-- 对象置空
+	me = KGC_PLAYER_TYPE.new();
+end
+
+--@function: Request的回调函数
+function KGC_CORE_TYPE:ReceiveMessage(nID, tbData)
+	local cjson = require("cjson.core")
+	print("[接受数据]协议：", nID)
+	local szLog = string.format("[接受数据]协议(%d)", nID);
+	--登录返回
+	if nID == 3007 then
+	elseif nID == 6009 then										--#地图初始化
+		local tbMapInfo = cjson.decode(tbData.mapinfo)
+		me:InitMap(tbMapInfo);
+	elseif nID == 6001 then										--#进入地图应答
+		MapViewLogic:getInstance():rspOpenView(tbData);
+	elseif nID == 6003 then 									--#地图行走应答
+		MapViewLogic:getInstance():rspMove(tbData);
+	elseif nID == 6005 then 									--地图元素功能通用接口
+		MapViewLogic:getInstance():rspElementFunction(tbData);
+	elseif nID == 6007 then 									--请求购买功能建筑内的物品
+		MapViewLogic:getInstance():rspBuyItem(tbData);
+	elseif nID == 8001 then 									--请求出售物品
+		KGC_BagViewLogic:getInstance():rspSell(tbData);
+	elseif nID == 8003 then 									--合成物品返回
+		ItemComLogic:getInstance():rspCom(tbData);
+	elseif nID == 8005 then										--请求使用道具
+		KGC_BagViewLogic:getInstance():rspUseItem(tbData)
+	elseif nID == 7012 then 									--请求合成返回
+		ForgingLogic:getInstance():rspForging(tbData);
+	elseif nID == 2003 then 									--GM工具
+		GMLogic:getInstance():rspGMItem(tbData);
+	elseif nID == 2005 then 									--GM工具
+		GMLogic:getInstance():rspGMBaseInfo(tbData);
+	elseif nID == 7016 then										--背包扩容
+		KGC_BagViewLogic:getInstance():rspExtendBag(tbData)
+	elseif nID == 5002 then		--获取英雄列表
+		local data = cjson.decode(tbData.heroInfoList)
+		KGC_MainViewLogic:getInstance():RspHeroList(data);
+	end
+
+	print(szLog);
+end
+
+--@function: 注册接受消息的回调函数(服务器主动发送类消息)
+function KGC_CORE_TYPE:RegisterMessageCallBack()
+	-- 接受聊天信息
+	KGC_CHAT_VIEW_LOGIC_TYPE:getInstance():RegisterMessageCallBack();
+	-- 邮件
+	EmailLogic:getInstance():RegisterMessageCallBack();
+	-- 登录
+	LoginViewLogic:getInstance():RegisterMessageCallBack()
+end
+
+function KGC_CORE_TYPE:OnLogin(bRet, data)
+	bRet = bRet or false;
+	data = data or ""
+	LoginViewLogic:getInstance():onLogin(bRet, data)
+end
+
+function KGC_CORE_TYPE:Notify(msg)
+	-- login
+
+	-- if g_uiLogin then
+		-- g_uiLogin:onLogin(msg)
+	-- end
+	LoginViewLogic:getInstance():onLogin(msg)
+end
+
+function KGC_CORE_TYPE:Fight(tbMineShip, tbEnemyShip)
+	--FightMgr
+	fightHall = g_FightMgr:CreateFightHall()
+	return fightHall:Fight(tbMineShip, tbEnemyShip)
+end
+
+-- 从core获取数据
+function KGC_CORE_TYPE:getData(nID)
+	--
+end
+
+function KGC_CORE_TYPE:GetModule(szModuleName)
+	return self[szModuleName];
+end
+
+--@function: 登出
+function KGC_CORE_TYPE:LoginOut()
+	cclog("/*******************************************/");
+	cclog("/****************Login out******************/");
+	cclog("/*******************************************/");
+	self:UnInit();
+	
+	if GameSceneManager:getInstance():getCurrentLayerID() == GameSceneManager.LAYER_ID_LOGIN then
+		print("333333333333333333333333333333333333333");
+	end
+	-- 界面都关掉
+	GameSceneManager:getInstance():UnInit();
+
+	--断开网络连接
+	self:closeNetwork();
+	g_Core.myIP = nil;
+	g_Core.myPort = nil;
+
+	-- 设置登录状态
+	self:SetGameState(l_tbGameState.TS_NOLOGIN);
+	-- 回到登录界面
+	GameSceneManager:getInstance():addLayer(GameSceneManager.LAYER_ID_LOGIN)
+end
+
+--@function: 获取游戏状态
+function KGC_CORE_TYPE:GetGameState()
+	return self.m_nState;
+end
+
+function KGC_CORE_TYPE:SetGameState(nState)
+	self.m_nState = nState or 0;
+end
+--relization
+g_Core = KGC_CORE_TYPE.new()
+

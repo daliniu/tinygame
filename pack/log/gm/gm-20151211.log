@@ -1,0 +1,12 @@
+[2015-12-11 14:34:18.249] [ERROR] gm - |gm|Error: Redis connection to 10.20.68.103:6379 failed - connect ETIMEDOUT
+[2015-12-11 14:34:18.251] [ERROR] gm - |gm|masterredis server shutdown
+[2015-12-11 14:34:18.253] [ERROR] gm - |gm|Error: Redis connection to 10.20.68.103:6479 failed - connect ETIMEDOUT
+[2015-12-11 14:34:18.254] [ERROR] gm - |gm|session redis server shutdown
+[2015-12-11 14:37:34.217] [ERROR] gm - |gm|Error: Redis connection to 10.20.68.103:6379 failed - connect ETIMEDOUT
+[2015-12-11 14:37:34.219] [ERROR] gm - |gm|masterredis server shutdown
+[2015-12-11 14:37:34.222] [ERROR] gm - |gm|Error: Redis connection to 10.20.68.103:6479 failed - connect ETIMEDOUT
+[2015-12-11 14:37:34.222] [ERROR] gm - |gm|session redis server shutdown
+[2015-12-11 14:40:49.162] [ERROR] gm - |gm|Error: Redis connection to 10.20.68.103:6379 failed - connect ETIMEDOUT
+[2015-12-11 14:40:49.164] [ERROR] gm - |gm|masterredis server shutdown
+[2015-12-11 14:40:49.166] [ERROR] gm - |gm|Error: Redis connection to 10.20.68.103:6479 failed - connect ETIMEDOUT
+[2015-12-11 14:40:49.167] [ERROR] gm - |gm|session redis server shutdown

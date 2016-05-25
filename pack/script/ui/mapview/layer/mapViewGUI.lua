@@ -1,0 +1,496 @@
+--地图探索，界面UI部分
+
+require("script/core/configmanager/configmanager");
+local buffConfigFile 	=	mconfig.loadConfig("script/cfg/map/buffexp")
+local imgConfigFile 	= 	mconfig.loadConfig("script/cfg/map/picture")
+local mpaConfigFile 	= 	mconfig.loadConfig("script/cfg/map/mapinfo");
+
+MapViewGUI = class("MapViewGUI",KGC_UI_BASE_SUB_LAYER,TB_MAP_VIEW_GUI)
+
+local TB_MAP_VIEW_GUI={
+	mapView = nil,
+	pWidget = nil,
+	m_BmpStep =nil,
+	m_BmpGold=nil,
+	m_BmpDiamond =nil,
+	m_BmpLevel=nil,
+	m_BmpExp=nil,
+	m_BarExp=nil,
+	pCancleTool =nil,
+	prog_teamHp = nil,		--团队体力进度条
+	prog_mapProg=nil,		--探索进度
+	pTeamHpValue = nil,		--团队体力值
+
+	panel_tools 	=	nil,		--工具panel;
+	pToosItem       =	nil,		--工具item
+	pBuffItem		=	nil,		--buffItem
+	toolPanelButton	=	nil,
+	toolList 		=	nil,
+
+	pnl_bg			= 	nil,		--背景图
+
+	pPanelBuffTips	=	nil,		--buff提示框//
+
+	pEffectAction =nil,
+
+	overPanel =nil,
+
+	bar_progess=nil,
+}
+
+function MapViewGUI:create(mapView)
+	self = MapViewGUI:new()
+	self.mapView = mapView
+	self:initAttr()
+	return self
+end
+
+function MapViewGUI:OnExit()
+	if self.pToosItem ~= nil then
+		self.pToosItem:release();
+		self.pToosItem=nil;
+	end
+
+	if self.pBuffItem ~=nil then 
+		self.pBuffItem:release();
+		self.pBuffItem =nil;
+	end
+
+	if self.pEffectAction ~=nil then 
+		self.pEffectAction:stop();
+		self.pEffectAction =nil;
+	end
+
+end
+
+function MapViewGUI:ctor()
+	local function fun_closeLayer(sender,event)
+        if event == ccui.TouchEventType.ended then
+            MapViewLogic:getInstance():hideLayer()
+        end
+    end
+
+    local function fun_bag(sender,event)
+    	if event == ccui.TouchEventType.ended then
+        	GameSceneManager:getInstance():addLayer(GameSceneManager.LAYER_ID_BAG,0)
+        end
+    end
+
+    local function fun_afkFight(sender,event)
+		if event == ccui.TouchEventType.ended then
+			GameSceneManager:getInstance():addLayer(GameSceneManager.LAYER_ID_FIGHT)
+		end
+	end
+
+	local function fun_removebufftips(sender,event)
+		if event == ccui.TouchEventType.ended then
+			self:removeBuffTips();
+		end
+	end
+
+
+	local function fun_map(sender,event)
+		if event == ccui.TouchEventType.ended then
+			MapChooseLogic:getInstance():openMapChoose();
+		end
+	end
+
+	--技能工具
+	local function fun_tooPanel(sender,event)
+		if event == ccui.TouchEventType.ended then
+			if self.panel_tools.isClose == true then 
+				self.panel_tools.isClose = false
+				self.panel_tools:setPositionX(self.panel_tools:getPositionX()-120);
+			else
+				self.panel_tools.isClose = true;
+				self.panel_tools:setPositionX(self.panel_tools:getPositionX()+120);
+			end
+		end
+	end
+
+	local function fun_next(sender,event)
+		if event == ccui.TouchEventType.ended then
+			MapChooseLogic:getInstance():openMapChoose();
+			self:setOverPanel(false);
+		end
+	end
+
+
+    self.pWidget=ccs.GUIReader:getInstance():widgetFromJsonFile("res/map.json")
+    self:addChild(self.pWidget)
+    
+    local btn_close = self.pWidget:getChildByName("btn_close")
+    btn_close:addTouchEventListener(fun_closeLayer)
+
+
+    self.panel_tools = self.pWidget:getChildByName("Panel_tools");
+
+    self.toolList = self.panel_tools:getChildByName("ScrollView_toolList")
+
+    self.toolPanelButton = self.panel_tools:getChildByName("Panel_openBtn");
+    self.toolPanelButton:addTouchEventListener(fun_tooPanel);
+    --工具栏默认关闭
+	self.panel_tools.isClose = true;
+	self.panel_tools:setPositionX(self.panel_tools:getPositionX()+120);
+
+
+    self.pToosItem = self.panel_tools:getChildByName("Panel_toolItem");
+    self.pToosItem:removeFromParent();
+  	self.pToosItem:retain();
+
+  	self.pBuffItem = self.pWidget:getChildByName("Panel_buff_item");
+  	self.pBuffItem:retain();
+  	self.pBuffItem:removeFromParent();
+
+    local btn_bag = self.pWidget:getChildByName("btn_bag")
+   	btn_bag:addTouchEventListener(fun_bag)
+
+   	local btn_afk = self.pWidget:getChildByName("btn_map");
+   	btn_afk:addTouchEventListener(fun_afkFight);
+
+   	local panel_map = self.pWidget:getChildByName("Panel_map");
+   	panel_map:addTouchEventListener(fun_map);
+
+   	self.m_BmpStep = self.pWidget:getChildByName("pnl_playerinfo"):getChildByName("btn_move"):getChildByName("bmp_movenum");
+   	self.m_BmpGold = self.pWidget:getChildByName("pnl_playerinfo"):getChildByName("btn_money"):getChildByName("bmp_moneynum");
+	self.m_BmpDiamond = self.pWidget:getChildByName("pnl_playerinfo"):getChildByName("btn_diamond"):getChildByName("bmp_diamondnum");
+	self.m_BmpLevel = self.pWidget:getChildByName("pnl_playerinfo"):getChildByName("img_playerlevel"):getChildByName("bmp_playerlevel");
+	self.m_BmpExp = self.pWidget:getChildByName("pnl_playerinfo"):getChildByName("img_playerlevel"):getChildByName("bmp_expnum");
+	self.m_BarExp = self.pWidget:getChildByName("pnl_playerinfo"):getChildByName("img_playerlevel"):getChildByName("bar_exp");	
+
+	--体力进度条
+	local _ivTeamHp = self.pWidget:getChildByName("Panel_teamHp"):getChildByName("img_prog")
+	local _frame = _ivTeamHp:getVirtualRenderer():getSpriteFrame()
+	local progress2Sprite=cc.Sprite:createWithSpriteFrame(_frame)
+   	self.prog_teamHp=cc.ProgressTimer:create(progress2Sprite);
+   	self.prog_teamHp:setType(kCCProgressTimerTypeRadial);
+   	self.prog_teamHp:setPosition(cc.p(_ivTeamHp:getPosition()));
+   	_ivTeamHp:setVisible(false)
+   	self.pWidget:getChildByName("Panel_teamHp"):addChild(self.prog_teamHp);  
+
+   	self.pnl_bg = self.pWidget:getChildByName("pnl_bg");
+
+   	self.pPanelBuffTips = self.pWidget:getChildByName("Panel_buffTips");
+   	self.pPanelBuffTips:addTouchEventListener(fun_removebufftips)
+   	self:removeBuffTips();
+
+   	--创建主按钮
+    self.m_pMainBtnLayer = MainButtonLayer:create(true)
+    self:AddSubLayer(self.m_pMainBtnLayer)
+
+    --经验特效
+    af_expLoopEffectAnimation(self.m_BarExp)
+
+	self.m_BmpStep:setString(tostring(0))
+
+
+        --特效
+    self:addNameEffect();
+
+    self.overPanel = self.pWidget:getChildByName("Panel_over");
+    local btn_next = self.overPanel:getChildByName("btn_queding_0")
+    btn_next:addTouchEventListener(fun_next);
+    self:setOverPanel(false);
+
+
+    self.bar_progess = self.pWidget:getChildByName("pnl_throw"):getChildByName("pnl_throw_info"):getChildByName("bar_progess")
+end
+
+function MapViewGUI:initAttr()
+	self:initValue();
+    self:initTools();
+
+end
+
+function MapViewGUI:initValue()
+	self.mapView.role.physical = me:GetAP();
+	local nGold = me:GetGold();
+	local nDiamond = me:GetDiamond();
+	local nLevel = me:GetLevel();
+	local nVIP = me:GetVIP();
+	local nExp = me:GetExp()
+	local nLevelUpExp = me:GetLevelUpExp();
+	local szExp = nExp .. "/" .. nLevelUpExp;
+	local nPercent = nExp / nLevelUpExp*100;
+
+	if nPercent < 0 then
+		nPercent = 0;
+	elseif nPercent > 100 then
+		nPercent = 100;
+	end
+
+
+	self:addExpEffect(self.m_BarExp,nPercent,self.m_BmpExp,nExp);
+	self:addGoldEffect(self.m_BmpGold,nGold);
+	
+	self.m_BmpLevel:setString(tostring(nLevel))
+	self.m_BmpDiamond:setString(tostring(nDiamond));
+	self.m_BmpExp:setString(szExp)
+	self.m_BarExp:setPercent(nPercent);
+	self.m_BarExp.expValue = nExp;
+
+	--self:setPhysical(self.mapView.role.physical)
+	--体力数值显示
+   	-- self.pTeamHpValue = self.pWidget:getChildByName("Panel_teamHp"):getChildByName("lab_value")
+   	-- self.pTeamHpValue:setString(math.floor(self.mapView.role:getTeamHpPro()*100).."%")
+   	-- self.prog_teamHp:setPercentage(self.mapView.role:getTeamHpPro()*100);
+
+   	--buffer
+    -- local _buffer  = me:getMapBuffList();
+    -- self:updateBuffer(_buffer);
+
+    lableNumAnimation(self.m_BmpGold,nil,nGold,1);
+
+    self:addFlyParticleEffect(1);
+    self:addFlyParticleEffect(2);
+
+    self:setProcess(MapViewLogic:getInstance().currentProcess)
+end
+
+
+function MapViewGUI:initTools()
+	
+    local function fun_tool(sender,event)
+    	if event == ccui.TouchEventType.ended then
+        	self.mapView:setStateTool()
+        	self.pCancleTool:setScale(1)
+        end
+    end
+
+    local function fun_cancleTool(sender,event)
+    	if event == ccui.TouchEventType.ended then
+        	self.mapView:setStateNormal();
+        	self.pCancleTool:setScale(0)
+        end
+    end
+
+    self.pCancleTool = self.pWidget:getChildByName("btn_quxiao")
+  	self.pCancleTool:addTouchEventListener(fun_cancleTool);
+  	self.pCancleTool:setScale(0)
+
+  	
+	
+end
+
+
+function MapViewGUI:setPhysical(iValue)
+	self.m_BmpStep:setString(tostring(iValue));
+	--lableNumAnimation(self.m_BmpStep,nil,iValue,1);
+end
+
+
+function MapViewGUI:addBuffer(id,iValue)
+	local bufferPanel = self.pWidget:getChildByName("Panel_buff")
+	local icount = #(bufferPanel:getChildren());
+
+	local imgRes = imgConfigFile[buffConfigFile[id].Pic].Path
+
+
+	local buffPanel = self.pBuffItem:clone();
+	buffPanel:setPosition(cc.p(icount*(-110),0));
+
+	--icon
+	local img_icon = buffPanel:getChildByName("img_icon");
+	img_icon:loadTexture(imgRes);
+
+	--剩余计数
+	local lab_count = buffPanel:getChildByName("lab_count")
+	if iValue==nil then 
+		iValue =buffConfigFile[id].TimeArg;
+		lab_count:setString(iValue);
+	else
+		lab_count:setString(iValue);
+	end
+
+	--类型图标
+
+	local function fun_tips(sender,event)
+		if event == ccui.TouchEventType.ended then
+			self:displayBuffTips(sender.id,sender.value);
+		end
+	end
+
+	buffPanel.id = id;
+	buffPanel.value = iValue;
+	buffPanel:addTouchEventListener(fun_tips);
+
+
+	--加入界面
+	bufferPanel:addChild(buffPanel)
+
+end
+
+
+function MapViewGUI:updateBuffer(pTab)
+	local bufferPanel = self.pWidget:getChildByName("Panel_buff")
+	bufferPanel:removeAllChildren();
+    if pTab~=nil then 
+        for k,v in pairs(pTab) do
+        	self:addBuffer(v.id,v.value);
+        end
+    end
+end
+
+
+
+function MapViewGUI:addGoldEffect(pWidget,iNum)
+	if iNum ~= tonumber(self.m_BmpGold:getString()) then 
+		local EffectNode1 = af_GetEffectByID(60042);
+		EffectNode1:setPositionY(25)
+		EffectNode1:setPositionX(0)
+		pWidget:addChild(EffectNode1);
+
+		local labNum = ccui.Text:create();
+		labNum:setString("+"..iNum);
+		labNum:setFontSize(25)
+		labNum:setPositionX(10)
+		labNum:setColor(cc.c3b(250,200,0))
+		pWidget:addChild(labNum);
+
+		local pAction = cc.Sequence:create(cc.MoveBy:create(1.0,cc.p(0,-50)),
+											cc.RemoveSelf:create());
+		labNum:runAction(pAction);
+
+
+	end
+end
+
+
+function MapViewGUI:addExpEffect(m_BarExp,nPercent,pLable,nValue)
+	if nPercent~= self.m_BarExp:getPercent() then 
+		local EffectNode2 = af_GetEffectByID(60044);
+		m_BarExp:addChild(EffectNode2);
+
+		if m_BarExp.expValue==nil then
+			m_BarExp.expValue =0;
+		end
+
+		local labNum = ccui.Text:create();
+		labNum:setString("+"..nValue-m_BarExp.expValue);
+		labNum:setFontSize(25)
+		labNum:setPositionX(0)
+		labNum:setColor(cc.c3b(0,200,250))
+		pLable:addChild(labNum);
+		local pAction = cc.Sequence:create(cc.MoveBy:create(1.0,cc.p(0,-50)),
+											cc.RemoveSelf:create());
+		labNum:runAction(pAction);
+
+	end
+end
+
+--@function: 设置底部按钮底框是否显示
+function MapViewGUI:SetMenuBgVisible(bVisible)
+	local bVisible = bVisible or false;
+	if self.pnl_bg then
+		self.pnl_bg:setVisible(bVisible);
+	end
+end
+
+
+
+--按钮tips
+function MapViewGUI:displayBuffTips(id,value)
+	self.pPanelBuffTips:setVisible(true);
+	self.pPanelBuffTips:setScale(1)
+
+	local config = buffConfigFile[id];
+
+	local imgRes = imgConfigFile[config.Pic].Path
+
+	--icon
+	local img_icon = self.pPanelBuffTips:getChildByName("img_icon");
+	img_icon:loadTexture(imgRes);
+
+	--剩余计数
+	local lab_count =self.pPanelBuffTips:getChildByName("lab_count")
+	lab_count:setString(value);
+
+	--类型图标
+	local img_type = self.pPanelBuffTips:getChildByName("img_type")
+
+	--名字
+	local lab_name = self.pPanelBuffTips:getChildByName("lab_name")
+	lab_name:setString(config.Name);
+
+	--描述
+	local lab_info = self.pPanelBuffTips:getChildByName("lab_info")
+	lab_info:setString(config.Desc);
+
+end
+
+--移除buff tisp 
+function MapViewGUI:removeBuffTips()
+	self.pPanelBuffTips:setVisible(false);
+	self.pPanelBuffTips:setScale(0.0001);
+end
+
+
+---添加金币、经验，飞翔粒子效果
+function MapViewGUI:addFlyParticleEffect(iType)
+
+	local startPos = self.mapView.role:getParent():convertToWorldSpaceAR(cc.p(self.mapView.role:getPosition()));
+	local endPos   = nil
+	local pPaht = nil
+	if iType ==1 then
+		pPaht = "res/ANI/effect/effect_add_expfly_01/effect_add_expfly_01.plist"
+		endPos=cc.p(280,1260)
+	else
+		pPaht = "res/ANI/effect/effect_add_moneyfly_01/effect_add_moneyfly_01.plist"
+		endPos = cc.p(387,1307);
+	end
+	local pEmiter = cc.ParticleSystemQuad:create(pPaht)
+	self:addChild(pEmiter);
+	pEmiter:setPosition(startPos);
+
+
+	local fMoveTime = 0.7
+	local pAction = cc.Sequence:create(cc.MoveTo:create(fMoveTime,endPos),cc.RemoveSelf:create());
+
+	pEmiter:runAction(pAction);
+
+end
+
+
+
+--增加地图名字效果
+function MapViewGUI:addNameEffect()
+	
+
+	local pEffect =ccs.GUIReader:getInstance():widgetFromJsonFile("res/ani_mapname.json")
+
+	local function fun_setRemove(pNode,pTab)
+		pEffect:setVisible(false);
+		pEffect:setScale(0.01);
+	end
+
+    self:addChild(pEffect)
+    self.pEffectAction = ccs.ActionManagerEx:getInstance():playActionByName("ani_mapname.json", "tital",cc.CallFunc:create(fun_setRemove,{}));
+
+    local text_name = pEffect:getChildByName("img_bg"):getChildByName("lbl_mapname");
+    local mapConfig = mpaConfigFile[MapViewLogic:getInstance().currentMapID]
+    text_name:setString(mapConfig.MapName);
+
+end
+
+
+--设置通关界面消失
+function MapViewGUI:setOverPanel(bValue)
+	if bValue==true then 
+		self.overPanel:setVisible(true);
+		self.overPanel:setScale(1);
+	else
+		self.overPanel:setVisible(false);
+		self.overPanel:setScale(0.001);
+	end
+end
+
+--设置探索进度
+function MapViewGUI:setProcess(iValue)
+	local iValue = iValue or 0;
+	local maxValue = mpaConfigFile[MapViewLogic:getInstance().currentMapID].Exploration
+	local prc = iValue/maxValue*100;
+	if prc >100 then 
+		prc=100;
+	end
+	self.bar_progess:setPercent(prc);
+end

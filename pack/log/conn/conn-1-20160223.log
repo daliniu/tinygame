@@ -1,0 +1,6 @@
+[2016-02-23 17:09:53.057] [INFO] conn-1 - |conn-1|0|getConnServerLoadNums|in:|{"chnlId":"mi"}|out:|{"loadNums":90,"connName":"conn-1","host":"10.136.50.94","port":"5000"}
+[2016-02-23 17:09:53.363] [INFO] conn-1 - |conn-1|当前连接数：1
+[2016-02-23 17:09:59.465] [INFO] conn-1 - |conn-1|服务器断开了一个客户端
+[2016-02-23 17:46:47.874] [INFO] conn-1 - |conn-1|0|getConnServerLoadNums|in:|{"chnlId":"mi"}|out:|{"loadNums":90,"connName":"conn-1","host":"10.136.50.94","port":"5000"}
+[2016-02-23 17:46:48.151] [INFO] conn-1 - |conn-1|当前连接数：1
+[2016-02-23 17:48:41.039] [INFO] conn-1 - |conn-1|服务器断开了一个客户端

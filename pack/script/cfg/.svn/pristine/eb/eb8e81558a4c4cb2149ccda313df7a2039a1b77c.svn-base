@@ -1,0 +1,101 @@
+-- excel xlstable format (sparse 3d matrix)
+--{	[sheet1] = { [row1] = { [col1] = value, [col2] = value, ...},
+--					 [row5] = { [col3] = value, }, },
+--	[sheet2] = { [row9] = { [col9] = value, }},
+--}
+-- nameindex table
+--{ [sheet,row,col name] = index, .. }
+sheetname = {
+["Sheet1"] = 1,
+};
+
+sheetindex = {
+[1] = "Sheet1",
+};
+
+local elementtype = {
+[1] = {
+	[1] = {
+		["Type"] = 1,
+		["SheetName"] = "chest",
+		["ElementName"] = "资源宝箱",
+		["State"] = {1,2},
+	},
+	[2] = {
+		["Type"] = 2,
+		["SheetName"] = "chestchoo",
+		["ElementName"] = "抉择型资源",
+		["State"] = {1,2},
+	},
+	[6] = {
+		["Type"] = 6,
+		["SheetName"] = "monsterchal",
+		["ElementName"] = "挑战怪",
+		["State"] = {1,2},
+	},
+	[7] = {
+		["Type"] = 7,
+		["SheetName"] = "monsterchoo",
+		["ElementName"] = "抉择型挑战",
+		["State"] = {1,2},
+	},
+	[8] = {
+		["Type"] = 8,
+		["SheetName"] = "mission",
+		["ElementName"] = "连续挑战类",
+		["State"] = {1,2},
+	},
+	[9] = {
+		["Type"] = 9,
+		["SheetName"] = "unknow",
+		["ElementName"] = "未知建筑",
+		["State"] = {1,2,3},
+	},
+	[12] = {
+		["Type"] = 12,
+		["SheetName"] = "buffstation",
+		["ElementName"] = "buff点",
+		["State"] = {1,2},
+	},
+	[16] = {
+		["Type"] = 16,
+		["SheetName"] = "watchtower",
+		["ElementName"] = "瞭望塔",
+		["State"] = {1,2},
+	},
+	[17] = {
+		["Type"] = 17,
+		["SheetName"] = "portal",
+		["ElementName"] = "传送门",
+	},
+	[19] = {
+		["Type"] = 19,
+		["SheetName"] = "npc",
+		["ElementName"] = "剧情npc",
+		["State"] = {1,2},
+	},
+	[30] = {
+		["Type"] = 30,
+		["SheetName"] = "lsurface",
+		["ElementName"] = "沼泽",
+	},
+	[31] = {
+		["Type"] = 31,
+		["SheetName"] = "lsurface",
+		["ElementName"] = "大风",
+	},
+	[32] = {
+		["Type"] = 32,
+		["SheetName"] = "lobstacle",
+		["ElementName"] = "可除障碍",
+		["State"] = {1,2},
+	},
+	[33] = {
+		["Type"] = 33,
+		["ElementName"] = "绝对障碍",
+	},
+},
+};
+
+
+return elementtype[1]

@@ -1,0 +1,604 @@
+--战斗指令解析器(单例全局)
+
+require ("script/lib/definefunctions")
+require ("script/core/skill/define")
+require ("script/core/minifight/minidef")
+require("script/core/configmanager/configmanager");
+local l_tbSkillConfig = mconfig.loadConfig("script/cfg/skills/skills")
+local l_tbStatus = mconfig.loadConfig("script/cfg/skills/status")
+local l_tbStatesResultConfig = mconfig.loadConfig("script/cfg/skills/statusresults")
+local l_tbResultConfig = mconfig.loadConfig("script/cfg/skills/skillresults")
+local l_tbCamp = def_GetFightCampData()
+local TB_ENUM_SKILL_TYPE_DEF, TB_ENUM_SKILL_TYPE_NAME_DEF = def_GetSkillTypeData()
+
+--指令相关宏定义
+PARSERCOMMAND = 
+{
+	FIGHTSTART = 1, 
+	UPDATECOST = 2, 
+	UPDATEHP = 3, 
+	ROUNDSTART = 4, 
+	DELAYBACKTOPROCESS = 5, 
+	REMOVEBUFF = 6, 
+	ADDBUFF = 7, 
+	NORMALATTACKEFFECT = 8, 
+	SUMMONATTACKMOVE = 9, 
+	CHARACTERATTACK = 10, 
+	COMBOATTACKEFFECT = 11, 
+	UPDATEFIGHTRECORD = 12, 
+	SUMMON = 13, 
+	COPY = 14, 
+	CURLEFFECT = 15, 
+	MULTIATTACKEFFECT = 16, 
+	CHARACTERDEFENSE = 17, 
+	UISUMMONDEATH = 18, 
+	SUMMONATTACKMOVEBACK = 19, 
+	BINDATTACKEFFECT = 20, 
+	CHARACTERDEFENSEEFFECT = 21, 
+	ROUNDEND = 22, 
+	FIGHTEND = 23, 
+	SETSKILLCARD = 24,
+	RANDOMSKILLCARD = 25, 
+}
+
+local TB_FIGHT_PARSER_STRUCT = 
+{
+
+}
+
+FightParser = class("FightParser", CLASS_BASE_TYPE, TB_FIGHT_PARSER_STRUCT)
+
+function FightParser:ctor()
+	
+end
+
+function FightParser:ResetTempData()
+	self.m_tCost = {[l_tbCamp.MINE] = 0, [l_tbCamp.ENEMY] = 0}		--缓存每轮消耗
+	self.m_tTotalCost = {[l_tbCamp.MINE] = 0, [l_tbCamp.ENEMY] = 0}	--缓存每轮最大费用值
+	self.m_bRanCard = false
+end
+
+--战斗数据解析成指令
+--[[
+
+]]
+function FightParser:Parse(tFightData)
+	local tCommand = {}
+	self:ResetTempData()
+	--战斗开始指令
+	table.insert(tCommand, {processcommand = PARSERCOMMAND.FIGHTSTART})
+	--重置费用指令
+	self:PackCostCommand(tCommand, 0, 0, 0, 0, 0, l_tbCamp.MINE)
+	self:PackCostCommand(tCommand, 0, 0, 0, 0, 0, l_tbCamp.ENEMY)	
+	for i, tRoundData in ipairs(tFightData) do	
+		--该轮开始指令
+		table.insert(tCommand, {processcommand = PARSERCOMMAND.ROUNDSTART, tArg = {round = i}})	
+		--该轮卡牌设置
+		table.insert(tCommand, {processcommand = PARSERCOMMAND.SETSKILLCARD, tArg = {nRound = i, nMaxCost = tRoundData.tCost[l_tbCamp.MINE]}})		
+		self.m_bRanCard = false
+		--费用更新指令
+		for nCamp, nCost in pairs(tRoundData.tCost) do
+			self:PackCostCommand(tCommand, self.m_tCost[nCamp], 1, 0, i, nCost, nCamp, true)
+			self.m_tTotalCost[nCamp] = nCost
+		end
+		--延迟1s开始该轮操作
+		table.insert(tCommand, {processcommand = PARSERCOMMAND.DELAYBACKTOPROCESS, tArg = 0.8})
+		--设置回复费用后清空本轮费用记录
+		self.m_tCost = {[l_tbCamp.MINE] = 0, [l_tbCamp.ENEMY] = 0}
+		--做空默认{}处理，可能出现该轮开始伤害buff扣血后结束的情况
+		tRoundData.op = tRoundData.op or {}
+		for _, tData in ipairs(tRoundData.op) do
+			--buff类型
+			if tData.type == minidef.OP_TYPE.buff then
+				self:PackOPBuffCommand(tCommand, tData)
+			elseif tData.type == minidef.OP_TYPE.skill then
+				self:PackOPSkillCommand(tCommand, i, tData, false)	
+			elseif tData.type == minidef.OP_TYPE.queueskill then
+				self:PackOPSkillCommand(tCommand, i, tData, true)
+			end
+		end		
+		--该轮结束指令
+		table.insert(tCommand, {processcommand = PARSERCOMMAND.ROUNDEND, tArg = {round = i}})
+		--该轮结束状态清除
+		if tRoundData.tEndBuff then
+			for _, tBuff in pairs(tRoundData.tEndBuff) do
+				table.insert(tCommand, 
+					{processcommand = PARSERCOMMAND.REMOVEBUFF, 
+					 tArg = {
+					 	nCamp = tBuff.camp, 
+					 	nPos = tBuff.pos, 
+					 	nBuffId = tBuff.id
+					 	}
+					})
+			end
+		end
+	end
+	--战斗结束指令
+	table.insert(tCommand, {processcommand = PARSERCOMMAND.FIGHTEND})
+
+	-- print("++++++++++++++++++++++++++++++++")
+	-- for i, v in ipairs(tCommand) do
+	-- 	print("processname = ", v.processname)
+	-- 	if v.tArg then
+	-- 		tst_print_lua_table(v.tArg)
+	-- 	end
+	-- end
+	-- print("++++++++++++++++++++++++++++++++")
+
+	return tCommand
+end
+
+--打包更新费用指令
+--recovery恢复费用数，add增加费用数，sub减少费用数，round回合数
+function FightParser:PackCostCommand(tCommandList, recovery, add, sub, round, total, camp, bRoundStart)
+	if round > minidef.MAX_COST then
+		add = 0
+		total = MAX_COST
+	end
+	local tCommand = {}
+	tCommand.processcommand = PARSERCOMMAND.UPDATECOST
+	tCommand.tArg = {}
+	tCommand.tArg.nCur = total - recovery
+	tCommand.tArg.nMax = total
+	tCommand.tArg.nBefore = total - recovery + sub - add
+	tCommand.tArg.nChange = add
+	tCommand.tArg.nCamp = camp
+	--每轮开始水晶当前直接等于最大
+	if bRoundStart then
+		tCommand.tArg.nCur = total
+	end
+	table.insert(tCommandList, tCommand)
+end
+
+function FightParser:PackOPBuffCommand(tCommand, tBuff)
+	if not tBuff.id then
+		return
+	end
+	local tBuffResult = l_tbStatesResultConfig[l_tbStatus[tBuff.id].staturesultsid]
+	if tBuffResult.effecttype == STATUS_TYPE.ADD then	--增加属性，暂无效果
+	elseif tBuff.nRet == STATUS_TYPE.REDUCE then	--减少属性，暂无效果
+	end
+	--判断是否有血量改变
+	if tBuff.value then
+		for k, tValue in pairs(tBuff.value) do
+			if tValue.hp and tValue.maxhp then
+				table.insert(tCommand, 
+					{processcommand = PARSERCOMMAND.UPDATEHP, 
+					 tArg = {
+					 	nCamp = tBuff.camp, 
+					 	nPos = tBuff.pos, 
+					 	nCurHP = tValue.hp, 
+					 	nMaxHP = tValue.maxhp, 
+					 	bShare = tValue.ball					 	
+					 	}
+					})
+			end
+		end
+	end
+	--buff释放技能，暂无效果
+	if tBuff.skillid then 
+	end
+	--buff消失
+	if tBuff.dis then
+		table.insert(tCommand, 
+			{processcommand = PARSERCOMMAND.REMOVEBUFF, 
+			 tArg = {
+			 	nCamp = tBuff.camp, 
+			 	nPos = tBuff.pos, 
+			 	nBuffId = tBuff.id
+			 	}
+			})
+	end
+end
+
+function FightParser:PackAddBuff(tCommand, nCamp, nPos, tBuffList)
+	for _, nBuffId in pairs(tBuffList) do
+		table.insert(tCommand, 
+			{processcommand = PARSERCOMMAND.ADDBUFF, 
+			 tArg = {
+			 	nCamp = nCamp, 
+			 	nPos = nPos, 
+			 	nBuffId = nBuffId
+			 	}
+			})
+	end
+end
+
+function FightParser:PackRemoveBuff(tCommand, nCamp, nPos, tBuffList)
+	for _, nBuffId in pairs(tBuffList) do
+		table.insert(tCommand, 
+			{processcommand = PARSERCOMMAND.REMOVEBUFF, 
+			 tArg = {
+			 	nCamp = nCamp, 
+			 	nPos = nPos, 
+			 	nBuffId = nBuffId
+			 	}
+			})
+	end
+end
+
+function FightParser:PackOPSkillCommand(tCommand, nRound, tSkill, bQueueSkill)	
+	--技能不释放
+	if not tSkill.bcast then
+		return
+	end
+
+	--搜索前buff效果
+	for k, tBuff in pairs(tSkill.beforeSearchBuff) do
+		self:PackOPBuffCommand(tCommand, tBuff)
+	end
+
+	--费用消耗
+	if tSkill.skillcost and tSkill.skillcost ~= 0 then
+		self.m_tCost[tSkill.camp] = self.m_tCost[tSkill.camp] + tSkill.skillcost
+		self:PackCostCommand(tCommand, self.m_tCost[tSkill.camp], 0, tSkill.skillcost, nRound, self.m_tTotalCost[tSkill.camp], tSkill.camp)
+	end
+
+	--获取技能信息
+	local tSkillInfo = l_tbSkillConfig[tSkill.skillid]
+	local tSkillResult = l_tbResultConfig[tSkillInfo.skillresultsid]
+	--技能释放前特效显示：选择英雄等
+	table.insert(tCommand, 
+		{processcommand = PARSERCOMMAND.NORMALATTACKEFFECT, 
+		 tArg = {
+		 	nCamp = tSkill.camp, 
+		 	nSkillId = tSkill.skillid, 
+		 	nPos = tSkill.pos
+		 	}
+		})
+	--卡牌选择
+	if not self.m_bRanCard and tSkill.camp == l_tbCamp.MINE and tSkill.pos >=4 and tSkill.pos <= 6 then
+		table.insert(tCommand, 
+			{processcommand = PARSERCOMMAND.RANDOMSKILLCARD, 
+			 tArg = {
+			 	nMaxCost = self.m_tTotalCost[tSkill.camp], 
+			 	nPos = tSkill.pos, 
+			 	nSkillId = tSkill.skillid, 
+			 	nRound = nRound
+			 	}
+			})
+		-- self.m_bRanCard = true
+	end
+	--攻击
+	--判断是否是召唤物，是否是攻击
+	if tSkill.pos >= 1 and tSkill.pos <= 3 and not bQueueSkill then
+		if tSkillResult.effecttype == minidef.SKILL_EFFECT.ATTACK or 
+		 tSkillResult.effecttype == minidef.SKILL_EFFECT.COMMON then
+			--移动
+			local nDePos
+			for nPos, tTarget in pairs(tSkill.target) do
+				nDePos = nPos
+			end
+			table.insert(tCommand, 
+				{processcommand = PARSERCOMMAND.SUMMONATTACKMOVE, 
+				 tArg = {
+				 	nSkillId = tSkill.skillid, 
+				 	nCamp = tSkill.camp, 
+				 	nPos = tSkill.pos, 
+				 	nDePos = nDePos
+				 	}
+				})
+			--攻击
+			table.insert(tCommand, 
+				{processcommand = PARSERCOMMAND.CHARACTERATTACK, 
+				 tArg = {
+				 	nPos = tSkill.pos, 
+				 	nSkillId = tSkill.skillid, 
+				 	nCamp = tSkill.camp, 
+				 	tmultiple = tSkill.tMultiple, 
+				 	tcombo = tSkill.comboheropos
+				 	}
+				})			
+		end
+	else
+		--英雄or怪物攻击
+		table.insert(tCommand, 
+			{processcommand = PARSERCOMMAND.CHARACTERATTACK, 
+			 tArg = {
+			 	nPos = tSkill.pos, 
+			 	nSkillId = tSkill.skillid, 
+			 	nCamp = tSkill.camp, 
+			 	tmultiple = tSkill.tMultiple, 
+			 	tcombo = tSkill.comboheropos
+			 	}
+			})						
+	end
+	--播放合击动画
+	if tSkill.bcombo or (tSkill.comboheropos and #tSkill.comboheropos ~= 0) then
+		table.insert(tCommand, 
+			{processcommand = PARSERCOMMAND.COMBOATTACKEFFECT, 
+			 tArg = {
+			 	nCamp = tSkill.camp, 
+			 	nSkillId = tSkill.skillid, 
+			 	tcombo = tSkill.comboheropos, 
+			 	nPos = tSkill.pos
+			 	}
+			})
+	end
+	--更新文字
+	table.insert(tCommand, 
+		{processcommand = PARSERCOMMAND.UPDATEFIGHTRECORD, 
+		 tArg = {
+		 	nCamp = tSkill.camp, 
+		 	nPos = tSkill.pos, 
+		 	nSkillId = tSkill.skillid, 
+		 	nCost = tSkill.skillcost, 
+		 	tTarget = tSkill.target
+		 	}
+		 })
+	--防御		
+	if tSkillResult.effecttype == minidef.SKILL_EFFECT.ADD then
+		--添加水晶
+		for nPos, tAdd in pairs(tSkill.target) do
+			self.m_tTotalCost[tAdd.tcamp] = self.m_tTotalCost[tAdd.tcamp] + tAdd.addCost
+			self:PackCostCommand(tCommand, 
+				self.m_tCost[tAdd.tcamp], 
+				tAdd.addCost, 
+				0, 
+				nRound, 
+				self.m_tTotalCost[tAdd.tcamp], 
+				tAdd.tcamp)
+		end		
+	elseif tSkillResult.effecttype == minidef.SKILL_EFFECT.CALL then
+		table.insert(tCommand, 
+			{processcommand = PARSERCOMMAND.SUMMON, 
+			 tArg = {
+			 	tTarget = tSkill.target, 
+			 	nSkillId = tSkill.skillid, 
+			 	}
+			})
+		for nPos, tCall in pairs(tSkill.target) do
+			if tCall.enterBuff then
+				self:PackAddBuff(tCommand, tCall.tcamp, nPos, tCall.enterBuff)
+			end
+		end
+	elseif tSkillResult.effecttype == minidef.SKILL_EFFECT.COPY then
+		table.insert(tCommand, 
+			{processcommand = PARSERCOMMAND.COPY, 
+			 tArg = {
+			 	tTarget = tSkill.target, 
+			 	nSkillId = tSkill.skillid, 
+			 	}
+			})
+		for _, tCopy in pairs(tSkill.target) do
+			if tCopy.enterBuff then
+				self:PackAddBuff(tCommand, tCopy.tcamp, nPos, tCopy.enterBuff)
+			end
+		end
+	elseif tSkillResult.effecttype == minidef.SKILL_EFFECT.STATUS then
+		for nPos, tStatus in pairs(tSkill.target) do
+			if tStatus.bingo and tStatus.addBuff then				
+				self:PackAddBuff(tCommand, tStatus.tcamp, tStatus.pos, tStatus.addBuff)
+			end
+		end
+	elseif tSkillResult.effecttype == minidef.SKILL_EFFECT.CURL then
+		for nPos, tCurl in pairs(tSkill.target) do
+			if tCurl.bingo then
+				table.insert(tCommand, 
+					{processcommand = PARSERCOMMAND.CURLEFFECT, 
+					 tArg = {
+					 	nCamp = tCurl.tcamp, 
+					 	nPos = tSkill.pos, 
+					 	nSkillId = tSkill.skillid, 
+					 	nValue = tCurl.value, 
+					 	nDePos = nPos
+					 	}
+					})
+				table.insert(tCommand, 
+					{processcommand = PARSERCOMMAND.UPDATEHP, 
+					 tArg = {
+					 	nCamp = tCurl.tcamp, 
+					 	nPos = nPos, 
+					 	nCurHP = tCurl.hp, 
+					 	nMaxHP = tCurl.maxhp, 
+					 	bShare = tCurl.ball
+					 	}
+					})	
+				if tCurl.skillDis then					
+					self:PackRemoveBuff(tCommand, tCurl.tcamp, nPos, tCurl.skillDis)
+				end		
+				if tCurl.skillBuff then					
+					self:PackAddBuff(tCommand, tCurl.tcamp, nPos, tCurl.skillBuff)
+				end		
+			end
+		end	
+	elseif tSkillResult.effecttype == minidef.SKILL_EFFECT.MUTIL then		
+		--播放多重特效
+		table.insert(tCommand, {processcommand = PARSERCOMMAND.MULTIATTACKEFFECT, tArg = {}})
+	else
+		--普通防御
+		--防御特效
+		table.insert(tCommand, 
+			{processcommand = PARSERCOMMAND.CHARACTERDEFENSEEFFECT, 
+			 tArg = {
+			 	tTarget = tSkill.target, 
+			 	nSkillId = tSkill.skillid, 
+			 }
+			})
+		--受击掉血
+		for nPos, tDefense in pairs(tSkill.target) do
+			if tDefense.hp and tDefense.maxhp then
+				table.insert(tCommand, 
+					{processcommand = PARSERCOMMAND.UPDATEHP, 
+					 tArg = {
+					 	nCamp = tDefense.tcamp, 
+					 	nPos = nPos, 
+					 	nCurHP = tDefense.hp, 
+					 	nMaxHP = tDefense.maxhp, 
+					 	bShare = tDefense.ball
+					 	}
+					})	
+			end
+		end
+		table.insert(tCommand, 
+			{processcommand = PARSERCOMMAND.CHARACTERDEFENSE, 
+			 tArg = {
+			 	tTarget = tSkill.target, 
+			 	nSkillId = tSkill.skillid, 
+			 	nCamp = tSkill.camp
+			 }
+			})
+		
+		for nPos, tDefense in pairs(tSkill.target) do
+			if tDefense.skillDis then					
+				self:PackRemoveBuff(tCommand, tDefense.tcamp, nPos, tDefense.skillDis)
+			end		
+			if tDefense.skillBuff then					
+				self:PackAddBuff(tCommand, tDefense.tcamp, nPos, tDefense.skillBuff)
+			end	
+			if tDefense.damageBuff then
+				self:PackOPBuffCommand(tCommand, damageBuff)
+			end			
+			if tDefense.bDead then
+				if tDefense.deadBuff then
+					for _, tBuff in pairs(tDefense.deadBuff) do
+						self:PackOPBuffCommand(tCommand, tBuff)
+					end
+				end
+				table.insert(tCommand, 
+					{processcommand = PARSERCOMMAND.UISUMMONDEATH, 
+					 tArg = {
+					 	nCamp = tDefense.tcamp, 
+					 	nPos = nPos, 
+					 	nNewSummonId = tDefense.newSummonid
+					 }
+					})							
+				if tDefense.newSummonid and tDefense.enterBuff then
+					self:PackAddBuff(tCommand, tDefense.tcamp, nPos, tDefense.enterBuff)
+				end
+			end			
+		end
+
+		--判断是否是怪物，怪物则攻击完需要返回
+		if tSkill.pos >= 1 and tSkill.pos <= 3 and not bQueueSkill then
+			table.insert(tCommand, 
+				{processcommand = PARSERCOMMAND.SUMMONATTACKMOVEBACK, 
+				 tArg = {
+				 	nCamp = tSkill.camp, 
+				 	nPos = tSkill.pos
+				 	}
+				})
+		end		
+	end		
+
+	--伤害buff
+	if tSkill.hurtBuff then
+		self:PackOPBuffCommand(tCommand, tSkill.hurtBuff)
+	end
+
+	--治疗buff
+	if tSkill.curlBuff then
+		for _, tBuff in pairs(tSkill.curlBuff) do
+			self:PackOPBuffCommand(tCommand, tBuff)
+		end
+	end
+
+	--播放连携特效
+	if tSkill.tBind then
+		table.insert(tCommand, 
+			{processcommand = PARSERCOMMAND.BINDATTACKEFFECT, 
+			 tArg = {
+			 	nCamp = tData.nCamp, 
+			 	tBind = tData.tBind, 
+			 	}
+			})
+	end
+
+	--若非连携，多重等效果则延迟1秒再执行下一步攻击
+	if not tSkill.tBind and not tSkill.tMultiple then
+		table.insert(tCommand, {processcommand = PARSERCOMMAND.DELAYBACKTOPROCESS, tArg = 0.1})
+	end
+end
+
+--[[
+tFightData格式
+{
+	--一轮的总操作table
+	[1] = {
+		--回合起始玩家费用值
+		tCost = {
+			[nCamp1] = nCost1,
+			[nCamp2] = nCost2,
+		},
+		op = {
+			{},
+			{},
+			{},
+		},
+		tEndBuff = {
+			{camp, pos, id},
+			{},
+		},	
+	}, 
+	[2] = {
+
+	}, 
+	...
+}
+
+op = {
+	{	--buff
+		type = "buff"
+		camp
+		pos
+		id
+		dis
+		value = {
+			{type, value, ball, hp, maxhp }
+		}
+		skillid
+	}
+	{	--正常释放技能
+		type = "skill"
+		camp
+		skillcost	--无论如何扣这么多费
+		bcombo
+		comboheropos = { pos, pos }
+		
+		pos
+		skillid
+		
+		bcast	--技能放不放
+		
+		beforeSearchBuff = {
+			{}	--buff
+			{}	--buff
+			{}	--buff
+		}
+		
+		target = {
+			--攻击
+			[pos] = {tcamp, bingo = true, skillBuff = {id, id}, skillDis = {id, id}, ball, bCrit, bImmu, bShield, damage, hp, maxhp, bDead, damageBuff = {}, deadBuff = {{},{}, }, newSummonid, enterBuff = {{},{}, }, }, 
+			--治疗
+			[pos] = {tcamp, bingo = true, skillBuff = {id, id}, skillDis = {id, id}, ball, value, hp, maxhp, }, 
+			--多重施法
+			[pos] = {tcamp, bingo, skillcost = {cost1, cost2, cost3}, }
+			--杀生物
+			{同攻击}, 
+			--增加费用
+			[pos] = {tcamp, bingo, addCost = 2, }, 
+			--召唤生物
+			[pos] = {tcamp, bingo, bSuc = false, summonid, bInQueue = false, enterBuff = {{},{}, }, bRein = false(连携), skillcost = cost, }, 
+			--复制
+			[pos] = {tcamp, bingo, copycamp, copypos, summonid, enterBuff = {{}, {}}, }, 
+			--上状态
+			[pos] = {tcamp, bingo = true, addBuff = {id, id}, }, 
+		}
+		
+		hurtBuff = {}	--buff
+		curlBuff = {
+			{}	--buff
+			{}	--buff
+		}	
+	}
+	{	--触发技能
+		type = "queueskill"
+		camp
+		skillcost = nil
+		bcombo = nil
+		comboheropos = nil
+		
+		--同上
+	}
+}
+]]

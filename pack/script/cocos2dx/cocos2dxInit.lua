@@ -1,0 +1,6 @@
+require "script/cocos2dx/Cocos2dConstants"
+require "script/cocos2dx/OpenglConstants"
+require "script/cocos2dx/StudioConstants"
+require "script/cocos2dx/GuiConstants"
+require "script/cocos2dx/Cocos2d"
+require "script/cocos2dx/SpineConstants"

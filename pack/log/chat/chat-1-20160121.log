@@ -1,0 +1,2 @@
+[2016-01-21 17:06:56.299] [INFO] chat-1 - |chat-1|0|sendMsgToServer|in:|{"uuid":"wzw1001","area":1,"type":4,"msg":"jin"}|out:|{"state":"1"}
+[2016-01-21 17:06:56.306] [INFO] chat-1 - |chat-1||request.message|DONE|rid:32899e03-83bb-4070-9fe6-92977d3cb40bchat-1|

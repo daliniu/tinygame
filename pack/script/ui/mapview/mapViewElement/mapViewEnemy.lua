@@ -1,0 +1,476 @@
+--怪
+require("script/core/configmanager/configmanager");
+local rewardConfigFile  		= 	mconfig.loadConfig("script/cfg/pick/drop")
+local elementTypeFile 			= 	mconfig.loadConfig("script/cfg/map/elementtype")
+local stringConfigFile 			= 	require("script/cfg/string");
+local monsterBoxConfigFile 		=	mconfig.loadConfig("script/cfg/battle/monsterbox");
+local monsterchalConfigFile 	=	mconfig.loadConfig("script/cfg/map/building/monsterchal");
+local monsterchooConfigFile 	=	mconfig.loadConfig("script/cfg/map/building/monsterchoo");
+local missionConfiFile 			=	mconfig.loadConfig("script/cfg/map/building/mission");
+local unknowConfigFile			=	mconfig.loadConfig("script/cfg/map/building/unknow");
+local exitConfigFile			=	mconfig.loadConfig("script/cfg/map/building/exit");
+
+
+local MAP_ENEMY_FR_WIN = 1 ; 		--胜利
+local MAP_ENEMY_FR_LOSE = 2 ; 		--失败
+
+MapViewEnemy = class("MapViewEnemy",function()
+	return MapViewElementBase:create()
+end,TB_MAP_VIEW_ENEMY)
+
+local TB_MAP_VIEW_ENEMY ={
+
+}
+
+function MapViewEnemy:create(id)
+	-- body
+	self = MapViewEnemy:new()
+	self.id = id
+	self:initAttr()
+	return self
+end
+
+function MapViewEnemy:ctor()
+	-- body
+end
+
+function MapViewEnemy:initAttr()
+	
+end
+
+
+--------------------------------------------------------------------------------------------------------
+--挑战怪
+MV_enemy_moraml = class("MV_enemy_moraml",function()
+	return MapViewEnemy.new()
+end)
+
+function MV_enemy_moraml:create(id)
+	self = MV_enemy_moraml.new()
+	self.id = id
+	self:initAttr()
+	return self
+end
+
+function MV_enemy_moraml:initAttr()
+	-- body
+	self.firstType = MapViewElementBase.FL_TYPE_ENEMY 				--一级类型
+	self.subType = MapViewElementBase.TYPE_ENEMY_NORMAL 			--次级类型
+
+
+	self.pConfig = monsterchalConfigFile[self.id]
+
+	self.indexPos=cc.p(0,0)
+	self:setImgRes({self.pConfig.Pic1})
+	self.spDisplay:setAnchorPoint(cc.p(0.5,0))
+	self:addChild(self.spDisplay)
+
+	self:initState();
+	self:initTouchBox();
+	self:addBaseEffect();
+end
+
+function MV_enemy_moraml:enemyFight(result)
+	if result == MAP_ENEMY_FR_WIN then 
+
+		if tonumber(self.pConfig.PickupLived) == 0 then 
+			self:setBeRemoved()
+		end
+
+	elseif result == MAP_ENEMY_FR_LOSE then 
+
+	end
+	
+end
+
+
+
+--远处查看层
+function MV_enemy_moraml:getInfoFunction(functionChooseLayer)
+	local pLayer = MapViewFunctionInfo:create(functionChooseLayer)
+	pLayer:setInfo(self,MapViewElementBase.INFO_PANEL_TYPE02)
+	pLayer:setButtones(nil)
+	pLayer:setTextInfo(self:getInfoString(self.pConfig.Desc1,1))		--文案
+	return pLayer;
+end
+
+function MV_enemy_moraml:getEnterFunction(functionChooseLayer)
+	local pLayer = MVEIL_Normal:create(functionChooseLayer)
+	pLayer:setInfo(self,MapViewElementBase.INFO_PANEL_TYPE02)
+	pLayer:setButtones({MapViewFunChooseLayer.FUN_TYPE_ENEMY_FIGHT},{stringConfigFile[13002]})
+	pLayer:setTextInfo(self:getInfoString(self.pConfig.Desc1,2))		--文案
+	return pLayer;
+end
+
+--战斗力比较
+function MV_enemy_moraml:fightCompare()
+	local monsterFight = monsterBoxConfigFile[self.pConfig.Monster].FightingForce
+	local playerFight = me:GetFightPoint();
+
+end
+
+--------------------------------------------------------------------------------------------------------
+--选择型挑战
+MV_enemy_choose = class("MV_enemy_choose",function()
+	return MapViewEnemy.new()
+end)
+
+function MV_enemy_choose:create(id)
+	self = MV_enemy_choose.new()
+	self.id = id
+	self:initAttr()
+	return self
+end
+
+function MV_enemy_choose:initAttr()
+	-- body
+	self.firstType = MapViewElementBase.FL_TYPE_ENEMY 			--一级类型
+	self.subType = MapViewElementBase.TYPE_ENEMY_CHOOSE 		--次级类型
+
+
+
+
+	self.pConfig = monsterchooConfigFile[self.id]
+
+	self.indexPos=cc.p(0,0)
+	self:setImgRes({self.pConfig.Pic1})
+	self.spDisplay:setAnchorPoint(cc.p(0.5,0))
+	self:addChild(self.spDisplay)
+end
+
+function MV_enemy_choose:chooseEnemyFight()
+	
+end
+
+
+
+
+
+--------------------------------------------------------------------------------------------------------
+--连续挑战
+MV_enemy_consecutive = class("MV_enemy_consecutive",function()
+	return MapViewEnemy.new()
+end)
+
+function MV_enemy_consecutive:create(id)
+	self = MV_enemy_consecutive.new()
+	self:initVar();
+	self.id = id
+	self:initAttr()
+	return self
+end
+
+function MV_enemy_consecutive:initVar()
+	self.floorIndex = 1;
+end
+
+function MV_enemy_consecutive:initAttr()
+	-- body
+	self.firstType = MapViewElementBase.FL_TYPE_ENEMY 				--一级类型
+	self.subType = MapViewElementBase.TYPE_ENEMY_CONTINUOUS 		--次级类型
+
+
+	self.pConfig = missionConfiFile[self.id]
+
+	self.indexPos=cc.p(0,0)
+	self:setImgRes({self.pConfig.Pic1})
+	self.spDisplay:setAnchorPoint(cc.p(0.5,0))
+	self:addChild(self.spDisplay)
+
+	self:initState();
+	self:initTouchBox();
+	self:addBaseEffect();
+end
+
+
+function MV_enemy_consecutive:consecutiveFight(result)
+	if result == MAP_ENEMY_FR_WIN then
+		self.floorIndex= self.floorIndex+1;
+	end
+end
+
+--远处查看层
+function MV_enemy_consecutive:getInfoFunction(functionChooseLayer)
+	local pLayer = MapViewFunctionInfo:create(functionChooseLayer)
+	pLayer:setInfo(self,MapViewElementBase.INFO_PANEL_TYPE03)
+	pLayer:setButtones(nil)
+
+	if self.iState == MapViewElementBase.STATE_01 then
+		pLayer:setTextInfo(self:getInfoString(self.pConfig.Desc1,1))		--文案
+	else
+		pLayer:setTextInfo(self:getInfoString(self.pConfig.Desc2,1))		--文案
+	end
+
+	return pLayer;
+end
+
+function MV_enemy_consecutive:getEnterFunction(functionChooseLayer)
+	local pLayer = MVEIL_openNewLayer:create(functionChooseLayer)
+	pLayer:setInfo(self,MapViewElementBase.INFO_PANEL_TYPE03)
+	pLayer:addNewViewButton(stringConfigFile[13002])
+
+	if self.iState == MapViewElementBase.STATE_01 then
+		pLayer:setTextInfo(self:getInfoString(self.pConfig.Desc1,2))		--文案
+	else
+		pLayer:setTextInfo(self:getInfoString(self.pConfig.Desc2,2))		--文案
+	end
+
+	return pLayer;
+end
+
+function MV_enemy_consecutive:getEnterFunctionSub(functionChooseLayer)
+
+	if self.iState == MapViewElementBase.STATE_01 then 
+		local pLayer = MVEIL_Enemy_Con_Normal:create(functionChooseLayer);
+		pLayer:setInfo(self,MapViewElementBase.INFO_PANEL_TYPE02)
+		pLayer:setButtones({MapViewFunChooseLayer.FUN_TYPE_CONSECUTIVE_FIGHT},{stringConfigFile[13002]})
+		pLayer:initAttr();
+		pLayer:setTextInfo(self:getInfoString(self.pConfig.Desc1,self.floorIndex+2))		--文案
+		return pLayer
+	end
+
+end
+
+
+
+--------------------------------------------------------------------------------------------------------
+--未知类
+
+MV_enemy_unknown = class("MV_enemy_unknown",function()
+	return MapViewEnemy.new()
+end)
+
+function MV_enemy_unknown:create(id)
+	self = MV_enemy_unknown.new()
+	self.id = id
+	self.iType = 0; 	--类型
+	self:initAttr()
+	return self
+end
+
+function MV_enemy_unknown:initAttr()
+	-- body
+	self.firstType = MapViewElementBase.FL_TYPE_ENEMY 				--一级类型
+	self.subType = MapViewElementBase.TYPE_ENEMY_UNKNOWN 			--次级类型
+
+
+	self.pConfig = unknowConfigFile[self.id]
+
+	self.indexPos=cc.p(0,0)
+	self:setImgRes({self.pConfig.Pic1})
+	self.spDisplay:setAnchorPoint(cc.p(0.5,0))
+	self:addChild(self.spDisplay)
+
+	self:initState();
+	self:initTouchBox();
+	self:addBaseEffect();
+	self:updateFuncitonWithState();
+end
+
+function MV_enemy_unknown:unknowBuilding(iType)
+	self.iType = iType
+	self.functionManager:addNewDialogBoxNode(self:getEnterFunction(self.functionManager));
+end
+
+function MV_enemy_unknown:getRewardWin(rewardID)
+
+	if tonumber(self.pConfig.PickupLived) == 0 then 
+		self:setBeRemoved()
+	end
+
+	if rewardID~=nil then
+		local itemIDConfig = rewardConfigFile[rewardID].ShowItem;
+		local itemID =nil
+		if itemIDConfig~=nil then
+			itemID = itemIDConfig[1]
+		end 
+		local pLayer = MVEIL_GetRewardLayer:create(self.functionManager,self,itemID,1);
+		if pLayer~=nil then 
+			pLayer:setTextInfo(self:getInfoString(self.pConfig.Desc2[2],2))
+			self.functionManager:addNewDialogBoxNode(pLayer);
+		end
+	end
+
+end
+
+function MV_enemy_unknown:enemyFight(result)
+	if result == MAP_ENEMY_FR_WIN then
+		if tonumber(self.pConfig.PickupLived) == 0 then 
+			self:setBeRemoved()
+		end
+	end
+end
+
+function MV_enemy_unknown:updateFuncitonWithState()
+
+	if self.iState == MapViewElementBase.STATE_01 then
+
+	elseif self.iState ==MapViewElementBase.STATE_02 then 
+		
+	elseif self.iState == MapViewElementBase.STATE_03 then
+
+	elseif self.iState == MapViewElementBase.STATE_04 then 
+
+	end
+
+end
+
+--附加信息
+-- 对于未知建筑，当 state 为 2的时候代表随机了，但还没有处理，这个时候 args 的内容有两种，分别对应捡宝箱和打怪：
+-- // 捡宝箱
+-- uid : {
+--   [state] = 2,
+--   [args] = {
+--     [randRet] = 1,// 随机结果，1代表捡宝箱，2代表打怪
+--     [reward] = xxx,
+--   },
+-- }
+-- // 打怪
+-- uid : {
+--   [state] = 2,
+--   [args] = {
+--     [randRet] = 2, 
+--     [monster] = 怪物id
+--     [reward] = 奖励id,
+--   },
+-- }
+function MV_enemy_unknown:setArgs(args)
+	self.iType = args.randRet;
+end
+
+--远处查看层
+function MV_enemy_unknown:getInfoFunction(functionChooseLayer)
+	if self.iState == MapViewElementBase.STATE_01 then 
+		local pLayer = MapViewFunctionInfo:create(functionChooseLayer)
+		pLayer:setInfo(self,MapViewElementBase.INFO_PANEL_TYPE03)
+		pLayer:setButtones(nil)
+		pLayer:setTextInfo(self:getInfoString(self.pConfig.Desc1,1))		--文案
+		return pLayer;
+	elseif self.iState ==MapViewElementBase.STATE_02 then 					--战斗	
+		local pLayer = MapViewFunctionInfo:create(functionChooseLayer)
+		pLayer:setInfo(self,MapViewElementBase.INFO_PANEL_TYPE03)
+		pLayer:setButtones(nil)
+		pLayer:setTextInfo(self:getInfoString(self.pConfig.Desc2,1))	
+		return pLayer;
+	elseif self.iState ==MapViewElementBase.STATE_03 then 					--宝箱
+		local pLayer = MapViewFunctionInfo:create(functionChooseLayer)
+		pLayer:setInfo(self,MapViewElementBase.INFO_PANEL_TYPE03)
+		pLayer:setButtones(nil)	
+		pLayer:setTextInfo(self:getInfoString(self.pConfig.Desc3,1))
+		return pLayer;
+	elseif self.iState ==MapViewElementBase.STATE_04 then
+		local pLayer = MapViewFunctionInfo:create(functionChooseLayer)
+		pLayer:setInfo(self,MapViewElementBase.INFO_PANEL_TYPE03)
+		pLayer:setTextInfo(self:getInfoString(self.pConfig.Desc4,1))		--文案
+		return pLayer;
+	end
+end
+
+function MV_enemy_unknown:getEnterFunction(functionChooseLayer)
+
+	if self.iState == MapViewElementBase.STATE_01 then 
+		local pLayer = MVEIL_Normal:create(functionChooseLayer)
+		pLayer:setInfo(self,MapViewElementBase.INFO_PANEL_TYPE03)
+		pLayer:setButtones({MapViewFunChooseLayer.FUN_TYPE_UNKNOWN_BUILDING},{stringConfigFile[13005]})
+		pLayer:setTextInfo(self:getInfoString(self.pConfig.Desc1,2))		--文案
+		return pLayer;
+	elseif self.iState ==MapViewElementBase.STATE_02 then  					--战斗
+		local pLayer = MVEIL_Normal:create(functionChooseLayer)
+		pLayer:setInfo(self,MapViewElementBase.INFO_PANEL_TYPE02)
+		pLayer:setButtones({MapViewFunChooseLayer.FUN_TYPE_ENEMY_FIGHT},{stringConfigFile[13002]})
+		pLayer:setTextInfo(self:getInfoString(self.pConfig.Desc3,2))		--文案
+		return pLayer;
+	elseif self.iState ==MapViewElementBase.STATE_03 then 					--宝箱
+		functionChooseLayer:fun_getRewardWin(self)
+		return pLayer;	
+	elseif self.iState ==MapViewElementBase.STATE_04 then 
+		local pLayer = MVEIL_Normal:create(functionChooseLayer)
+		pLayer:setInfo(self,MapViewElementBase.INFO_PANEL_TYPE03)
+		pLayer:setTextInfo(self:getInfoString(self.pConfig.Desc4,2))		--文案
+		return pLayer;
+	end
+end
+
+
+--------------------------------------------------------------------------------------------------------
+--出口挑战怪
+MV_enemy_exit = class("MV_enemy_exit",function()
+	return MapViewEnemy.new()
+end)
+
+function MV_enemy_exit:create(id)
+	self = MV_enemy_exit.new()
+	self.id = id
+	self:initAttr()
+	return self
+end
+
+function MV_enemy_exit:initAttr()
+	-- body
+	self.firstType = MapViewElementBase.FL_TYPE_ENEMY 				--一级类型
+	self.subType = MapViewElementBase.TYPE_ENEMY_EXIT 				--次级类型
+
+	self.isEnemyClean = false;
+
+	self.pConfig = exitConfigFile[self.id]
+
+	self.indexPos=cc.p(0,0)
+	self:setImgRes({self.pConfig.Pic1})
+	self.spDisplay:setAnchorPoint(cc.p(0.5,0))
+	self:addChild(self.spDisplay)
+
+	self:initState();
+	self:initTouchBox();
+	self:addBaseEffect();
+	self:updateFuncitonWithState();
+end
+
+function MV_enemy_exit:enemyFight(result)
+	self:updateFuncitonWithState();
+end
+
+function MV_enemy_exit:deliver()
+
+end
+
+
+function MV_enemy_exit:updateFuncitonWithState()
+	if self.iState == MapViewElementBase.STATE_01 then
+		self.isEnemyClean = false;
+
+	elseif self.iState ==MapViewElementBase.STATE_02 then
+		self.isEnemyClean = true;
+	end
+end
+
+--远处查看层
+function MV_enemy_exit:getInfoFunction(functionChooseLayer)
+	local pLayer = MapViewFunctionInfo:create(functionChooseLayer)
+	pLayer:setInfo(self,MapViewElementBase.INFO_PANEL_TYPE03)
+	pLayer:setButtones(nil)
+	if self.iState == MapViewElementBase.STATE_01 then 
+		pLayer:setTextInfo(self:getInfoString(self.pConfig.Desc1,1))		--文案
+	else
+		pLayer:setTextInfo(self:getInfoString(self.pConfig.Desc2,1))		--文案
+	end
+	
+	return pLayer;
+end
+
+function MV_enemy_exit:getEnterFunction(functionChooseLayer)
+	if self.iState == MapViewElementBase.STATE_01 then 
+		local pLayer = MVEIL_Normal:create(functionChooseLayer)
+		pLayer:setInfo(self,MapViewElementBase.INFO_PANEL_TYPE02)
+		pLayer:setButtones({MapViewFunChooseLayer.FUN_TYPE_ENEMY_FIGHT},{stringConfigFile[13002]})
+		pLayer:setTextInfo(self:getInfoString(self.pConfig.Desc1,2))		--文案
+		return pLayer;
+	elseif self.iState ==MapViewElementBase.STATE_02 then
+		local pLayer = MVEIL_SmipleDialog:create(functionChooseLayer,self)
+		pLayer:setButton(MapViewFunChooseLayer.FUN_TYPE_DELIVER,{stringConfigFile[13004]})
+		pLayer:setTextInfo(self:getInfoString(self.pConfig.Desc2,2))		--文案
+
+		--functionChooseLayer:fun_deliver(self)
+		return pLayer;
+	end
+end
+

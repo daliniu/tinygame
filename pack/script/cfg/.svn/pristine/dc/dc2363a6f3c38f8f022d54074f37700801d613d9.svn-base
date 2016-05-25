@@ -1,0 +1,126 @@
+-- excel xlstable format (sparse 3d matrix)
+--{	[sheet1] = { [row1] = { [col1] = value, [col2] = value, ...},
+--					 [row5] = { [col3] = value, }, },
+--	[sheet2] = { [row9] = { [col9] = value, }},
+--}
+-- nameindex table
+--{ [sheet,row,col name] = index, .. }
+sheetname = {
+["Sheet1"] = 1,
+};
+
+sheetindex = {
+[1] = "Sheet1",
+};
+
+local worldmap = {
+[1] = {
+	[101201] = {
+		["ID"] = 101201,
+		["Name"] = "史莱姆小屋",
+		["Des"] = "这里全是史莱姆，他们很无害，但是很喜欢打架",
+		["Type1"] = 1,
+		["Type2"] = 2,
+		["ResourceID"] = 100101,
+		["Next"] = 101102,
+		["Previous"] = 0,
+		["Openlevel"] = 1,
+		["wait"] = 5,
+		["waitlimit"] = 10,
+	},
+	[101102] = {
+		["ID"] = 101102,
+		["Name"] = "新世界",
+		["Des"] = "你来到了新世界，勇敢的迎接挑战吧",
+		["Type1"] = 1,
+		["Type2"] = 1,
+		["ResourceID"] = 1,
+		["Next"] = 101203,
+		["Previous"] = 101201,
+		["Openlevel"] = 1,
+		["wait"] = 5,
+		["waitlimit"] = 10,
+	},
+	[101203] = {
+		["ID"] = 101203,
+		["Name"] = "林间营地",
+		["Des"] = "在树林中你发现了一处洞穴，里面传来了奇怪的声音",
+		["Type1"] = 1,
+		["Type2"] = 2,
+		["ResourceID"] = 200101,
+		["Next"] = 101104,
+		["Previous"] = 101102,
+		["Openlevel"] = 1,
+		["wait"] = 5,
+		["waitlimit"] = 10,
+	},
+	[101104] = {
+		["ID"] = 101104,
+		["Name"] = "血色森林",
+		["Des"] = "这一片森林，四处都是红色，像鲜血流淌了满地",
+		["Type1"] = 1,
+		["Type2"] = 1,
+		["ResourceID"] = 2,
+		["Next"] = 101205,
+		["Previous"] = 101203,
+		["Openlevel"] = 1,
+		["wait"] = 5,
+		["waitlimit"] = 10,
+	},
+	[101205] = {
+		["ID"] = 101205,
+		["Name"] = "林间木屋",
+		["Des"] = "看起来是一个小木屋，但是源源不断的有敌人来攻击你",
+		["Type1"] = 1,
+		["Type2"] = 2,
+		["ResourceID"] = 200201,
+		["Next"] = 101106,
+		["Previous"] = 101104,
+		["Openlevel"] = 1,
+		["wait"] = 5,
+		["waitlimit"] = 10,
+	},
+	[101106] = {
+		["ID"] = 101106,
+		["Name"] = "卓尔湖畔",
+		["Des"] = "这里有湖，有草，有树，看起来很美，但是却有点诡异",
+		["Type1"] = 1,
+		["Type2"] = 1,
+		["ResourceID"] = 3,
+		["Next"] = 101207,
+		["Previous"] = 101205,
+		["Openlevel"] = 1,
+		["wait"] = 5,
+		["waitlimit"] = 10,
+	},
+	[101207] = {
+		["ID"] = 101207,
+		["Name"] = "女神之泪",
+		["Des"] = "这里传说中是雅典娜哭过的地方",
+		["Type1"] = 1,
+		["Type2"] = 2,
+		["ResourceID"] = 200202,
+		["Next"] = 101108,
+		["Previous"] = 101106,
+		["Openlevel"] = 1,
+		["wait"] = 5,
+		["waitlimit"] = 10,
+	},
+	[101108] = {
+		["ID"] = 101108,
+		["Name"] = "江南水乡",
+		["Des"] = "这里是江南",
+		["Type1"] = 1,
+		["Type2"] = 1,
+		["ResourceID"] = 4,
+		["Next"] = 0,
+		["Previous"] = 101207,
+		["Openlevel"] = 1,
+		["wait"] = 5,
+		["waitlimit"] = 10,
+	},
+},
+};
+
+
+return worldmap[1]

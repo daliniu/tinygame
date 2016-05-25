@@ -1,0 +1,18 @@
+{
+	"redis-master": {
+	    "port": 6379,
+	    "host": "10.136.50.94",
+	    "auth": "tinygame-redis.33455432"
+	},
+	"redis-session": {
+	    "port": 6479,
+	    "host": "10.136.50.94",
+	    "auth": "tinygame-redis.33455432"
+	},
+	"mysql": {
+		"host": "10.20.68.101",
+		"user": "caiyiheng",
+		"auth": "caiyiheng",
+		"dbname": "demo"
+	}
+}

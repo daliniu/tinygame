@@ -1,0 +1,122 @@
+{
+  "apps" : [{
+    "name"        : "gate-1",
+    "script"      : "app.js",
+    "cwd"         : "/home/pack",
+    "log_date_format"  : "YYYY-MM-DD HH:mm Z",
+    "watch"       : false,
+    "merge_logs"  : true,
+    "force"       : true,
+    "autorestart" : true,
+    "min_uptime"  : "5000",
+    "env": {
+        "type": "gate",
+        "id": "gate-1",
+        "host": "10.136.50.94",
+        "clientPort": 4000,
+        "router": 3000,
+        "DEFAULT_CONN_SERVER" : "conn-1",
+        "DEFAULT_CONN_IP" : "123.59.107.130",
+        "DEFAULT_CONN_PORT" : 5000
+    }
+  },{
+    "name"        : "conn-1",
+    "script"      : "app.js",
+    "cwd"         : "/home/pack",
+    "log_date_format"  : "YYYY-MM-DD HH:mm Z",
+    "watch"       : false,
+    "merge_logs"  : true,
+    "force"       : true,
+    "autorestart" : true,
+    "min_uptime"  : "5000",
+    "env": {
+        "type": "conn",
+        "id": "conn-1",
+        "host": "10.136.50.94",
+        "clientPort": 5000,
+        "router": 3000
+    }
+  },{
+    "name"        : "loc-1",
+    "script"      : "app.js",
+    "cwd"         : "/home/pack",
+    "log_date_format"  : "YYYY-MM-DD HH:mm Z",
+    "watch"       : false,
+    "merge_logs"  : true,
+    "force"       : true,
+    "autorestart" : true,
+    "min_uptime"  : "5000",
+    "env": {
+        "type": "loc",
+        "id": "loc-1",
+        "host": "10.136.50.94",
+        "router": 3000
+    }
+  },{
+    "name"        : "chat-1",
+    "script"      : "app.js",
+    "cwd"         : "/home/pack",
+    "log_date_format"  : "YYYY-MM-DD HH:mm Z",
+    "watch"       : false,
+    "merge_logs"  : true,
+    "force"       : true,
+    "autorestart" : true,
+    "min_uptime"  : "5000",
+    "env": {
+        "type": "chat",
+        "id": "chat-1",
+        "host": "10.136.50.94",
+        "router": 3000
+    }
+  },{
+    "name"        : "route",
+    "script"      : "app.js",
+    "cwd"         : "/home/pack",
+    "log_date_format"  : "YYYY-MM-DD HH:mm Z",
+    "watch"       : false,
+    "merge_logs"  : true,
+    "force"       : true,
+    "autorestart" : true,
+    "min_uptime"  : "5000",
+    "env": {
+        "type": "route",
+        "id": "route",
+        "host": "10.136.50.94",
+        "router": 3000
+    }
+  },{
+    "name"        : "gm",
+    "script"      : "app.js",
+    "cwd"         : "/home/pack",
+    "log_date_format"  : "YYYY-MM-DD HH:mm Z",
+    "watch"       : false,
+    "merge_logs"  : true,
+    "force"       : true,
+    "autorestart" : true,
+    "min_uptime"  : "5000",
+    "env": {
+        "type": "gm",
+        "id": "gm",
+        "host": "10.136.50.94",
+        "router": 3000,
+        "httpPort": 8099,
+        "aesKey": "tinygame-whatistheaeskey"
+    }
+  },{
+    "name"        : "pvp-1",
+    "script"      : "app.js",
+    "cwd"         : "/home/pack",
+    "log_date_format"  : "YYYY-MM-DD HH:mm Z",
+    "watch"       : false,
+    "merge_logs"  : true,
+    "force"       : true,
+    "autorestart" : true,
+    "min_uptime"  : "5000",
+    "env": {
+        "type": "pvp",
+        "id": "pvp-1",
+        "host": "10.136.50.94",
+        "router": 3000
+    }
+  }]
+}

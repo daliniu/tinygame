@@ -1,0 +1,4 @@
+[2015-12-11 14:40:49.290] [ERROR] route - |route|Error: Redis connection to 10.20.68.103:6379 failed - connect ETIMEDOUT
+[2015-12-11 14:40:49.294] [ERROR] route - |route|masterredis server shutdown
+[2015-12-11 14:40:49.297] [ERROR] route - |route|Error: Redis connection to 10.20.68.103:6479 failed - connect ETIMEDOUT
+[2015-12-11 14:40:49.298] [ERROR] route - |route|session redis server shutdown

@@ -1,0 +1,17 @@
+#!/bin/sh
+
+dir=/home/pack
+
+scriptpath=svn://gz2.xsjsvn.rdev.kingsoft.net/tiny-code/trunk/code/resource/script
+cfgpath=svn://gz2.xsjsvn.rdev.kingsoft.net/tiny-products/trunk/cfg
+
+cd $dir
+
+rm -rf script
+
+svn co $scriptpath
+
+cd $dir/script
+
+svn co $cfgpath
+

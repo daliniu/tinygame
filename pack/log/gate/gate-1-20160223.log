@@ -1,0 +1,10 @@
+[2016-02-23 17:09:52.504] [INFO] gate-1 - |gate-1|当前连接数：1
+[2016-02-23 17:09:53.053] [INFO] gate-1 - |gate-1|0|getAvgConnServerLoadNums|in:|{"chnlId":"mi"}|out:|{"host":"123.59.107.130","port":"5000","loadNums":2000,"retCode":0}
+[2016-02-23 17:09:53.059] [INFO] gate-1 - |gate-1||request.message|DONE|rid:4557956b-c0dc-4957-babb-58821036dfe3gate-1|
+[2016-02-23 17:09:53.151] [INFO] gate-1 - |gate-1|服务器断开了一个客户端
+[2016-02-23 17:12:56.980] [INFO] gate-1 - |gate-1|当前连接数：1
+[2016-02-23 17:13:00.079] [INFO] gate-1 - |gate-1|服务器断开了一个客户端
+[2016-02-23 17:46:47.724] [INFO] gate-1 - |gate-1|当前连接数：1
+[2016-02-23 17:46:47.871] [INFO] gate-1 - |gate-1|0|getAvgConnServerLoadNums|in:|{"chnlId":"mi"}|out:|{"host":"123.59.107.130","port":"5000","loadNums":2000,"retCode":0}
+[2016-02-23 17:46:47.876] [INFO] gate-1 - |gate-1||request.message|DONE|rid:e9abd19e-ebad-4549-9ce6-edc2d79d5eabgate-1|
+[2016-02-23 17:46:47.969] [INFO] gate-1 - |gate-1|服务器断开了一个客户端
